@@ -8,7 +8,7 @@
 #include "Field.h"
 #include <list>
 #include <iostream>
-#include "Util.h"
+#include "Utils.h"
 using namespace std;
 
 void Snake::moveTo()

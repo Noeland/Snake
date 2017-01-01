@@ -8,13 +8,7 @@
 #ifndef FIELD_H_
 #define FIELD_H_
 
-#include "Snake.h"
-const unsigned WIDTH = 22;
-const unsigned HEIGHT = 12;
-
-
-typedef char field_elem;
-typedef int Direc;
+#include "Utils.h"
 
 const Direc UP = -22;
 const Direc DOWN = 22;

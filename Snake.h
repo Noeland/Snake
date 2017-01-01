@@ -9,11 +9,7 @@
 #define SNAKE_H_
 #include <vector>
 #include <list>
-#include "Field.h"
-
-typedef unsigned Index;
-
-#define getIdx(i,j) i*WIDTH + j
+#include "Utils.h"
 
 const Index INIT_IDX = getIdx(1,1);
 
