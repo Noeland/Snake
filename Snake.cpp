@@ -11,6 +11,26 @@
 #include "Utils.h"
 using namespace std;
 
+const Direc INIT_DIR = RIGHT;
+const unsigned INIT_LEN = 2;
+const Index INIT_IDX = getIdx(1,1);
+
+Snake::Snake(Field *f)
+{
+	currDir = INIT_DIR;
+	isDead = false;
+	field = f;
+	length = INIT_LEN;
+}
+
+Snake::Snake(const Snake& other)
+{
+	currDir = other.currDir;
+	isDead = other.isDead;
+	field = other.field;
+	length = other.length;
+}
+
 void Snake::moveTo()
 {
 	Index newHead = getHeadIdx() + currDir;
@@ -19,8 +39,8 @@ void Snake::moveTo()
 		return grow();
 
 	if(!snake.empty()) {
-		snake.pop_front();			// erase the old tail
-		snake.push_back(newHead);	// insert new head
+		popTail();					// erase the old tail
+		insertHead(newHead);		// insert new head
 		field->moveSnake(this);		// tell the field to show the corresponding change
 	}
 	else
@@ -32,13 +52,13 @@ void Snake::grow()
 	Index newHead = getHeadIdx() + currDir;
 
 	if(!snake.empty()) {
-		snake.push_back(newHead);
+		insertHead(newHead);
 		field->growSnake(this);
 		length++;
 	}
 }
 
-bool Snake::isDeadMove(Direc Dir)
+bool Snake::isDeadMove(Direc Dir) const
 {
 	Index newHead = getHeadIdx() + Dir;
 	field_elem newpos = field->getElem(newHead);
