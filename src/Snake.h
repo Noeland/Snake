@@ -29,6 +29,7 @@ private:
 	bool isDeadMove(Direc Dir) const;
 	inline void popTail();
 	inline void insertHead(Index newhead);
+	unsigned BFS(Index start, Index end);
 
 
 

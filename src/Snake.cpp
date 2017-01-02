@@ -8,6 +8,8 @@
 #include "Field.h"
 #include <list>
 #include <iostream>
+#include <queue>
+#include <climits>
 #include "Utils.h"
 using namespace std;
 
@@ -78,7 +80,99 @@ bool Snake::isDeadMove(Direc Dir) const
 	return !field->isEmpty(newHead) && newHead != getTailIdx() && !field->isFood(newHead);
 }
 
+static Direc Direction[4] = {UP, DOWN, LEFT, RIGHT};
 void Snake::move()
 {
+	unsigned len[5];
+	Direc dir;
+	for(int i=0; i!=4; i++) {
+		switch(i) {
+		case 0: dir = UP;
+		break;
+		case 1: dir = DOWN;
+		break;
+		case 2: dir = LEFT;
+		break;
+		case 3: dir = RIGHT;
+		break;
+		}
+		Index head = getHeadIdx();
+		len[i] = BFS(head+dir, field->getFoodIdx());
+	}
+
+	unsigned min = 4;
+	len[min] = UINT_MAX;
+	for(int i=0;i!=4;i++) {
+		if(len[i] < len[min] && len[i] > 0)
+			min=i;
+	}
+
+	if(len[min] != 0 && min != 4)
+		currDir = Direction[min];
+	else {
+		cout << "impossible" << endl;
+		isDead = true;
+	}
+
 	moveTo();
+}
+
+unsigned Snake::BFS(Index start, Index end)
+{
+	Direc dir = start - getHeadIdx();
+	if(dir == -getCurrDir())
+		return 0;
+
+	if(isDeadMove(dir))
+		return 0;
+
+	unsigned size = field->fieldSize();
+
+	bool explored[size];
+	unsigned lenMap[size];
+	memset(explored, 0, size * sizeof(bool));
+	memset(lenMap, 0, size * sizeof(unsigned));
+	lenMap[start] = 1;
+
+	for(auto i : snake)
+		explored[i] = true;
+
+	queue<Index> q;
+	q.push(start);
+	Index idx = start;
+
+	while(!q.empty()) {
+		idx = q.front();
+		q.pop();
+
+		if(field->isFood(idx)) {
+			if(lenMap[idx] == 0)
+				unix_error("Unknown error in BFS");
+			return lenMap[idx];
+		}
+
+		for(int i=0; i!=4; i++) {
+			Direc dir;
+			switch(i) {
+			case 0: dir = UP;
+				break;
+			case 1: dir = DOWN;
+				break;
+			case 2: dir = LEFT;
+				break;
+			case 3: dir = RIGHT;
+				break;
+			}
+
+			if( !explored[idx+dir] && !field->isWall(idx+dir)) {
+				q.push(idx+dir);
+				lenMap[idx+dir] = lenMap[idx]+1;
+				explored[idx+dir] = true;
+			}
+		}
+
+	}
+
+	return 0;
+
 }
