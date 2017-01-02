@@ -32,8 +32,10 @@ public:
 	unsigned fieldWidth() const;
 	unsigned fieldHeight() const;
 	field_elem getElem(Index idx) const;
+	Index getFoodIdx() const;
 	bool isFood(Index idx) const;
 	bool isEmpty(Index idx) const;
+	bool isWall(Index idx) const;
 	void moveSnake(const Snake* snake);		// draw new snake location of field
 	void growSnake(const Snake* snake);
 	void display() const;

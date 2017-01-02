@@ -41,6 +41,13 @@ void Field::init(const Snake* snake)
 	field[body] = SNAKE_BODY;
 }
 
+void Field::move()
+{
+	if(hasBeenEaten)
+		foodIdx = foodGen();
+	field[foodIdx] = FOOD;
+}
+
 unsigned Field::fieldSize() const
 {
 	return FIELD_SIZE;
@@ -61,6 +68,11 @@ field_elem Field::getElem(Index idx) const
 	return field[idx];
 }
 
+Index Field::getFoodIdx() const
+{
+	return foodIdx;
+}
+
 bool Field::isFood(Index idx) const
 {
 		return idx == foodIdx;
@@ -69,6 +81,11 @@ bool Field::isFood(Index idx) const
 bool Field::isEmpty(Index idx) const
 {
 	return field[idx] == EMPTY_SLOT;
+}
+
+bool Field::isWall(Index idx) const
+{
+	return field[idx] == WALL;
 }
 
 void Field::moveSnake(const Snake* snake)
@@ -101,8 +118,9 @@ void Field::growSnake(const Snake* snake)
 Index Field::foodGen()
 {
 	if(hasBeenEaten == false) {
-		if(field[foodIdx] == FOOD)
+		if(field[foodIdx] == FOOD) {
 			return foodIdx;
+		}
 		else
 			unix_error("Food position inconsistent");
 	}
@@ -116,6 +134,7 @@ Index Field::foodGen()
 		i = distribution(generator);
 	} while(field[i] != EMPTY_SLOT);
 
+	hasBeenEaten = false;
 	return i;
 }
 
