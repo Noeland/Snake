@@ -115,37 +115,8 @@ void Snake::move()
 		moveTo();
 		return;
 	}
-	stack<Direc> Paths[4];
-	unsigned len[5];
-	Direc dir;
-	for(int i=0; i!=4; i++) {
-		switch(i) {
-		case 0: dir = UP;
-		break;
-		case 1: dir = DOWN;
-		break;
-		case 2: dir = LEFT;
-		break;
-		case 3: dir = RIGHT;
-		break;
-		}
-		Index head = getHeadIdx();
-		len[i] = BFS(head+dir, field->getFoodIdx(), Paths[i]);
-	}
 
-	unsigned min = 4;
-	len[min] = UINT_MAX;
-	for(int i=0;i!=4;i++) {
-		if(len[i] < len[min] && len[i] > 0)
-			min=i;
-	}
-
-	if(len[min] != 0 && min != 4)
-		path = Paths[min];
-	else {
-		cout << "impossible" << endl;
-		isDead = true;
-	}
+	BFS(getHeadIdx(), field->getFoodIdx(), path);
 
 	if(!path.empty()) {
 		currDir = path.top();
@@ -157,13 +128,6 @@ void Snake::move()
 static bool debugFlag = false;
 unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 {
-	Direc dir = start - getHeadIdx();
-	if(dir == -getCurrDir())
-		return 0;
-
-	if(isDeadMove(dir))
-		return 0;
-
 	unsigned size = field->fieldSize();
 
 	bool explored[size];
@@ -172,7 +136,7 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 	memset(explored, 0, size * sizeof(bool));
 	memset(lenMap, 0, size * sizeof(unsigned));
 	memset(dirMap, 0 , size * sizeof(Direc));
-	lenMap[start] = 1;
+	lenMap[start] = 0;
 	explored[start] = true;
 
 //	for(auto i : snake)
@@ -187,11 +151,10 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 		q.pop();
 
 		if(idx == end) {
-			while(dirMap[idx]!=0) {
+			while(idx != start) {
 				Path.push(-dirMap[idx]);
 				idx += dirMap[idx];
 			}
-			Path.push(idx-getHeadIdx());
 			return lenMap[end];
 		}
 

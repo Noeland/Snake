@@ -44,5 +44,8 @@ int main() {
 		usleep(1000* 50);
 	}
 
+	ClearScreen();
+	f.display();
+
 
 }
