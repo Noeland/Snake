@@ -19,6 +19,7 @@ struct Snake
 	// Snake(Direc dir, unsigned len);
 	inline Index getHeadIdx() const;
 	inline Index getTailIdx() const;
+	inline Direc getCurrDir() const;
 private:
 	void moveTo();			// move according to current direction.
 	void grow();
@@ -54,5 +55,9 @@ inline void Snake::insertHead(Index newhead)
 	snake.push_back(newhead);
 }
 
+inline Direc Snake::getCurrDir() const
+{
+	return currDir;
+}
 
 #endif /* SNAKE_H_ */

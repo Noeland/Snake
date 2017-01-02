@@ -21,7 +21,7 @@ const unsigned HEIGHT = 12;
 #define getIdx(i,j) i*WIDTH + j
 
 
-void unix_error(const std::string& msg)
+inline void unix_error(const std::string& msg)
 {
 	std::cerr << msg << std::endl;
 	exit(1);

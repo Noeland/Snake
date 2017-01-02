@@ -39,9 +39,9 @@ void Snake::moveTo()
 		return grow();
 
 	if(!snake.empty()) {
+		field->moveSnake(this);		// tell the field to show the corresponding change
 		popTail();					// erase the old tail
 		insertHead(newHead);		// insert new head
-		field->moveSnake(this);		// tell the field to show the corresponding change
 	}
 	else
 		unix_error("Snake has empty body.");
@@ -52,8 +52,8 @@ void Snake::grow()
 	Index newHead = getHeadIdx() + currDir;
 
 	if(!snake.empty()) {
-		insertHead(newHead);
 		field->growSnake(this);
+		insertHead(newHead);
 		length++;
 	}
 }
@@ -61,6 +61,5 @@ void Snake::grow()
 bool Snake::isDeadMove(Direc Dir) const
 {
 	Index newHead = getHeadIdx() + Dir;
-	field_elem newpos = field->getElem(newHead);
-	return newpos != EMPTY_SLOT && newHead != getTailIdx() && newpos != FOOD;
+	return !field->isEmpty(newHead) && newHead != getTailIdx() && !field->isFood(newHead);
 }
