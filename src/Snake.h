@@ -9,6 +9,8 @@
 #define SNAKE_H_
 #include <vector>
 #include <list>
+#include <queue>
+#include <stack>
 #include "Utils.h"
 
 struct Field;
@@ -29,7 +31,7 @@ private:
 	bool isDeadMove(Direc Dir) const;
 	inline void popTail();
 	inline void insertHead(Index newhead);
-	unsigned BFS(Index start, Index end);
+	unsigned BFS(Index start, Index end, std::stack<Direc>& Path);
 
 
 
@@ -38,6 +40,7 @@ private:
 	Direc currDir;
 	unsigned length;
 	Field *field;
+	std::stack<Direc> path;
 
 };
 

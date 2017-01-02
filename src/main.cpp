@@ -40,7 +40,8 @@ int main() {
 		ClearScreen();
 		f.display();
 		s.move();
-		sleep(1);
+		f.move();
+		usleep(1000* 50);
 	}
 
 

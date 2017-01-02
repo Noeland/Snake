@@ -9,6 +9,7 @@
 #include <list>
 #include <iostream>
 #include <queue>
+#include <stack>
 #include <climits>
 #include "Utils.h"
 using namespace std;
@@ -63,6 +64,7 @@ Snake::Snake(const Snake& other)
 	field = other.field;
 	length = other.length;
 	snake = other.snake;
+	path = other.path;
 }
 
 void Snake::moveTo()
@@ -102,9 +104,15 @@ bool Snake::isDeadMove(Direc Dir) const
 	return !field->isEmpty(newHead) && newHead != getTailIdx() && !field->isFood(newHead);
 }
 
-static Direc Direction[4] = {UP, DOWN, LEFT, RIGHT};
 void Snake::move()
 {
+	if(!path.empty()) {
+		currDir = path.top();
+		path.pop();
+		moveTo();
+		return;
+	}
+	stack<Direc> Paths[4];
 	unsigned len[5];
 	Direc dir;
 	for(int i=0; i!=4; i++) {
@@ -119,7 +127,7 @@ void Snake::move()
 		break;
 		}
 		Index head = getHeadIdx();
-		len[i] = BFS(head+dir, field->getFoodIdx());
+		len[i] = BFS(head+dir, field->getFoodIdx(), Paths[i]);
 	}
 
 	unsigned min = 4;
@@ -130,17 +138,21 @@ void Snake::move()
 	}
 
 	if(len[min] != 0 && min != 4)
-		currDir = Direction[min];
+		path = Paths[min];
 	else {
 		cout << "impossible" << endl;
 		isDead = true;
 	}
 
+	if(!path.empty()) {
+		currDir = path.top();
+		path.pop();
+	}
 	moveTo();
 }
 
 static bool debugFlag = false;
-unsigned Snake::BFS(Index start, Index end)
+unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 {
 	Direc dir = start - getHeadIdx();
 	if(dir == -getCurrDir())
@@ -153,8 +165,10 @@ unsigned Snake::BFS(Index start, Index end)
 
 	bool explored[size];
 	unsigned lenMap[size];
+	Direc dirMap[size];
 	memset(explored, 0, size * sizeof(bool));
 	memset(lenMap, 0, size * sizeof(unsigned));
+	memset(dirMap, 0 , size * sizeof(Direc));
 	lenMap[start] = 1;
 	explored[start] = true;
 
@@ -169,10 +183,13 @@ unsigned Snake::BFS(Index start, Index end)
 		idx = q.front();
 		q.pop();
 
-		if(field->isFood(idx)) {
-			if(lenMap[idx] == 0)
-				unix_error("Unknown error in BFS");
-			return lenMap[idx];
+		if(idx == end) {
+			while(dirMap[idx]!=0) {
+				Path.push(-dirMap[idx]);
+				idx += dirMap[idx];
+			}
+			Path.push(idx-getHeadIdx());
+			return lenMap[end];
 		}
 
 		for(int i=0; i!=4; i++) {
@@ -209,6 +226,7 @@ unsigned Snake::BFS(Index start, Index end)
 				q.push(idx+dir);
 				lenMap[idx+dir] = lenMap[idx]+1;
 				explored[idx+dir] = true;
+				dirMap[idx+dir] = -dir;
 				if(debugFlag == true)
 					printMap(lenMap);
 			}
