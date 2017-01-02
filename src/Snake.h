@@ -18,6 +18,7 @@ struct Snake
 {
 	Snake(Field* f);
 	Snake(const Snake& other);
+	Snake& operator=(const Snake& other);
 	// Snake(Direc dir, unsigned len);
 	inline Index getHeadIdx() const;
 	inline Index getTailIdx() const;

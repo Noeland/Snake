@@ -70,6 +70,18 @@ Snake::Snake(const Snake& other)
 	path = other.path;
 }
 
+Snake& Snake::operator=(const Snake& other)
+{
+	currDir = other.currDir;
+	isDead = other.isDead;
+	field = other.field;
+	length = other.length;
+	snake = other.snake;
+	path = other.path;
+
+	return *this;
+}
+
 void Snake::moveTo(bool isVirtual)
 {
 	if(isVirtual == true) {
@@ -138,7 +150,34 @@ void Snake::move()
 		return;
 	}
 
+	// Virtual
+	Snake backup_snake = *this;
 	BFS(getHeadIdx(), field->getFoodIdx(), path);
+
+	if(!path.empty()) {
+		stack<Direc> backup_path = path;
+
+		unsigned len = length;
+		do {
+			moveTo(true);
+		} while(!path.empty() && len == length+1);
+
+		BFS(getHeadIdx(), getTailIdx(), path);
+		bool solved = !path.empty();
+
+		if(solved) {
+			*this = backup_snake;
+			path = backup_path;
+			moveTo();
+			return;
+		}
+		else {
+			*this = backup_snake;
+			BFS(getHeadIdx(), getTailIdx(), path);
+			moveTo();
+			return;
+		}
+	}
 
 	moveTo();
 }
@@ -208,7 +247,7 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 					}
 				}
 				else
-					safeCross = false;
+				  safeCross = false;
 			}
 
 			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross) {
