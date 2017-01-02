@@ -39,7 +39,7 @@ public:
 	bool isWall(Index idx) const;
 	void moveSnake(const Snake* snake);		// draw new snake location of field
 	void growSnake(const Snake* snake);
-	void display() const;
+	void display(const Snake& s) const;
 
 private:
 	Index foodGen();			// generate new food index and set field[new index] to be the food

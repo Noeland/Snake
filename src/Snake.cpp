@@ -101,6 +101,7 @@ void Snake::moveTo(bool isVirtual)
 		}
 		else
 			unix_error("Virtual Snake has empty body.");
+		return;
 	}
 
 	if(!path.empty()) {
@@ -160,7 +161,7 @@ void Snake::move()
 		unsigned len = length;
 		do {
 			moveTo(true);
-		} while(!path.empty() && len == length+1);
+		} while(!path.empty() && len == length);
 
 		BFS(getHeadIdx(), getTailIdx(), path);
 		bool solved = !path.empty();
@@ -179,6 +180,7 @@ void Snake::move()
 		}
 	}
 
+
 	moveTo();
 }
 
@@ -190,14 +192,16 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 	bool explored[size];
 	unsigned lenMap[size];
 	Direc dirMap[size];
+	bool isBody[size];
 	memset(explored, 0, size * sizeof(bool));
 	memset(lenMap, 0, size * sizeof(unsigned));
 	memset(dirMap, 0 , size * sizeof(Direc));
+	memset(isBody, 0, size*sizeof(bool));
 	lenMap[start] = 0;
 	explored[start] = true;
 
-//	for(auto i : snake)
-//		explored[i] = true;
+	for(auto i : snake)
+		isBody[i] = true;
 
 	queue<Index> q;
 	q.push(start);
@@ -208,10 +212,16 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 		q.pop();
 
 		if(idx == end) {
+			stack<Direc> path;
 			while(idx != start) {
-				Path.push(-dirMap[idx]);
+				path.push(-dirMap[idx]);
 				idx += dirMap[idx];
 			}
+			if(end == field->getFoodIdx())
+				Path = path;
+			else
+				Path.push(path.top());
+
 			return lenMap[end];
 		}
 
@@ -230,7 +240,7 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 			Index newIdx = idx+dir;
 			bool safeCross = true;
 
-			if(field->isSnake(newIdx)) {
+			if(isBody[newIdx]) {
 
 				if(length != 2) {
 					safeCross = false;

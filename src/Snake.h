@@ -33,6 +33,7 @@ private:
 	inline void popTail();
 	inline void insertHead(Index newhead);
 	unsigned BFS(Index start, Index end, std::stack<Direc>& Path);
+	unsigned DFS(Index start, Index end, std::stack<Direc>& Path);
 
 
 

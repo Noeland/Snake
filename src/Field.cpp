@@ -143,12 +143,31 @@ Index Field::foodGen()
 	return i;
 }
 
-void Field::display() const
+void Field::display(const Snake& s) const
 {
 	for(Index idx=0; idx != FIELD_SIZE; idx++) {
+
 		if(idx % WIDTH == 0)
 			cout << endl;
-		cout << field[idx];
+
+		if(idx == s.getHeadIdx()) {
+			Direc dir = s.getCurrDir();
+			switch(dir) {
+			case UP: cout << '^';
+			break;
+			case DOWN: cout << 'v';
+			break;
+			case LEFT: cout << "<";
+			break;
+			case RIGHT: cout << '>';
+			break;
+			}
+		}
+		else if(idx == s.getTailIdx()) {
+			cout << 'o';
+		}
+		else
+			cout << field[idx];
 	}
 	cout << endl;
 }

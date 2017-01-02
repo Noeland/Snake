@@ -38,14 +38,14 @@ int main() {
 	while(!s.Dead())
 	{
 		ClearScreen();
-		f.display();
+		f.display(s);
 		s.move();
 		f.move();
-		usleep(1000* 50);
+		usleep(1000* 5);
 	}
 
 	ClearScreen();
-	f.display();
+	f.display(s);
 
 
 }
