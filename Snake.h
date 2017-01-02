@@ -37,12 +37,12 @@ private:
 
 inline Index Snake::getHeadIdx() const
 {
-	return snake.front();
+	return snake.back();
 }
 
 inline Index Snake::getTailIdx() const
 {
-	return snake.back();
+	return snake.front();
 }
 
 inline void Snake::popTail()

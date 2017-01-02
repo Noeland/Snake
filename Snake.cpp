@@ -21,6 +21,15 @@ Snake::Snake(Field *f)
 	isDead = false;
 	field = f;
 	length = INIT_LEN;
+
+	unsigned l=0;
+	while(l < 2) {
+		Index idx = INIT_IDX + (l++ * INIT_DIR);
+		if(field->isEmpty(idx))
+			insertHead(idx);
+		else
+			unix_error("Snake initilization failed");
+	}
 }
 
 Snake::Snake(const Snake& other)
@@ -29,6 +38,7 @@ Snake::Snake(const Snake& other)
 	isDead = other.isDead;
 	field = other.field;
 	length = other.length;
+	snake = other.snake;
 }
 
 void Snake::moveTo()
