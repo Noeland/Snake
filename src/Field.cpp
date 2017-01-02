@@ -29,11 +29,15 @@ void Field::init(const Snake* snake)
 	field[foodIdx = foodGen()] = FOOD;
 
 	Index body = snake->getHeadIdx();
+	int cnt=0;
 	while(body != snake->getTailIdx()) {
 		field[body] = SNAKE_BODY;
 		body += -snake->getCurrDir();
+		cnt++;
 	}
 
+	if(cnt != snake->getLength()-1)
+		unix_error("Initialization failed due to unconsistent length");
 	field[body] = SNAKE_BODY;
 }
 
@@ -104,6 +108,7 @@ Index Field::foodGen()
 	}
 
 	std::default_random_engine generator;
+	// std::random_device rd;
 	std::uniform_int_distribution<int> distribution(0, FIELD_SIZE-1);
 
 	Index i;

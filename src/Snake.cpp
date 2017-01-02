@@ -23,12 +23,12 @@ Snake::Snake(Field *f)
 	length = INIT_LEN;
 
 	unsigned l=0;
-	while(l < 2) {
+	while(l < length) {
 		Index idx = INIT_IDX + (l++ * INIT_DIR);
 		if(field->isEmpty(idx))
 			insertHead(idx);
 		else
-			unix_error("Snake initilization failed");
+			unix_error("Snake initilization failed: out of bound");
 	}
 }
 
@@ -43,6 +43,10 @@ Snake::Snake(const Snake& other)
 
 void Snake::moveTo()
 {
+	if(isDeadMove(currDir)) {
+		isDead = true;
+		return;
+	}
 	Index newHead = getHeadIdx() + currDir;
 
 	if(field->isFood(newHead))
@@ -72,4 +76,9 @@ bool Snake::isDeadMove(Direc Dir) const
 {
 	Index newHead = getHeadIdx() + Dir;
 	return !field->isEmpty(newHead) && newHead != getTailIdx() && !field->isFood(newHead);
+}
+
+void Snake::move()
+{
+	moveTo();
 }

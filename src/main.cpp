@@ -9,8 +9,25 @@
 #include <iostream>
 #include "Field.h"
 #include "Snake.h"
+#include <unistd.h>
 
 using namespace std;
+
+#include <unistd.h>
+#include <term.h>
+
+void ClearScreen()
+{
+	if (!cur_term)
+	{
+		int result;
+		setupterm( NULL, STDOUT_FILENO, &result );
+		if (result <= 0) return;
+	}
+	putp(tigetstr("clear") );
+}
+
+
 int main() {
 	cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
 
@@ -18,5 +35,13 @@ int main() {
 	Snake s(&f);
 	f.init(&s);
 
-	f.display();
+	while(!s.Dead())
+	{
+		ClearScreen();
+		f.display();
+		s.move();
+		sleep(1);
+	}
+
+
 }

@@ -20,12 +20,17 @@ struct Snake
 	inline Index getHeadIdx() const;
 	inline Index getTailIdx() const;
 	inline Direc getCurrDir() const;
+	inline unsigned getLength() const;
+	bool Dead() { return isDead; }
+	void move();
 private:
 	void moveTo();			// move according to current direction.
 	void grow();
 	bool isDeadMove(Direc Dir) const;
 	inline void popTail();
 	inline void insertHead(Index newhead);
+
+
 
 	std::list<Index> snake;
 	bool isDead;
@@ -58,6 +63,11 @@ inline void Snake::insertHead(Index newhead)
 inline Direc Snake::getCurrDir() const
 {
 	return currDir;
+}
+
+inline unsigned Snake::getLength() const
+{
+	return length;
 }
 
 #endif /* SNAKE_H_ */
