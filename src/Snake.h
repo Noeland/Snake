@@ -26,8 +26,8 @@ struct Snake
 	bool Dead() { return isDead; }
 	void move();
 private:
-	void moveTo();			// move according to current direction.
-	void grow();
+	void moveTo(bool isVirtual=false);			// move according to current direction.
+	void grow(bool isVirtual=false);
 	bool isDeadMove(Direc Dir) const;
 	inline void popTail();
 	inline void insertHead(Index newhead);

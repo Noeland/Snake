@@ -70,8 +70,12 @@ Snake::Snake(const Snake& other)
 	path = other.path;
 }
 
-void Snake::moveTo()
+void Snake::moveTo(bool isVirtual)
 {
+	if(!path.empty()) {
+		currDir = path.top();
+		path.pop();
+	}
 	if(isDeadMove(currDir)) {
 		isDead = true;
 		return;
@@ -90,7 +94,7 @@ void Snake::moveTo()
 		unix_error("Snake has empty body.");
 }
 
-void Snake::grow()
+void Snake::grow(bool isVirtual)
 {
 	Index newHead = getHeadIdx() + currDir;
 
@@ -110,18 +114,12 @@ bool Snake::isDeadMove(Direc Dir) const
 void Snake::move()
 {
 	if(!path.empty()) {
-		currDir = path.top();
-		path.pop();
 		moveTo();
 		return;
 	}
 
 	BFS(getHeadIdx(), field->getFoodIdx(), path);
 
-	if(!path.empty()) {
-		currDir = path.top();
-		path.pop();
-	}
 	moveTo();
 }
 
