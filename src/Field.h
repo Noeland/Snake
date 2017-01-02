@@ -35,6 +35,7 @@ public:
 	Index getFoodIdx() const;
 	bool isFood(Index idx) const;
 	bool isEmpty(Index idx) const;
+	bool isSnake(Index idx) const;
 	bool isWall(Index idx) const;
 	void moveSnake(const Snake* snake);		// draw new snake location of field
 	void growSnake(const Snake* snake);

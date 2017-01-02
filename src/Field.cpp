@@ -88,6 +88,11 @@ bool Field::isWall(Index idx) const
 	return field[idx] == WALL;
 }
 
+bool Field::isSnake(Index idx) const
+{
+	return field[idx] == SNAKE_BODY;
+}
+
 void Field::moveSnake(const Snake* snake)
 {
 	Index old_tail = snake->getTailIdx();

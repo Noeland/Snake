@@ -17,6 +17,28 @@ const Direc INIT_DIR = RIGHT;
 const unsigned INIT_LEN = 2;
 const Index INIT_IDX = getIdx(1,1);
 
+inline void printMap(bool arr[])
+{
+	unsigned size = WIDTH * HEIGHT;
+	for(unsigned i=0; i!=size; i++) {
+		if(i%WIDTH == 0)
+			std::cout << std::endl;
+		std::cout << arr[i] << ' ' ;
+	}
+	std::cout << std::endl;
+}
+
+inline void printMap(unsigned arr[])
+{
+	unsigned size = WIDTH * HEIGHT;
+	for(unsigned i=0; i!=size; i++) {
+		if(i%WIDTH == 0)
+			std::cout << std::endl;
+		std::cout << arr[i] << ' ' ;
+	}
+	std::cout << std::endl;
+}
+
 Snake::Snake(Field *f)
 {
 	currDir = INIT_DIR;
@@ -117,6 +139,7 @@ void Snake::move()
 	moveTo();
 }
 
+static bool debugFlag = false;
 unsigned Snake::BFS(Index start, Index end)
 {
 	Direc dir = start - getHeadIdx();
@@ -133,9 +156,10 @@ unsigned Snake::BFS(Index start, Index end)
 	memset(explored, 0, size * sizeof(bool));
 	memset(lenMap, 0, size * sizeof(unsigned));
 	lenMap[start] = 1;
+	explored[start] = true;
 
-	for(auto i : snake)
-		explored[i] = true;
+//	for(auto i : snake)
+//		explored[i] = true;
 
 	queue<Index> q;
 	q.push(start);
@@ -163,11 +187,30 @@ unsigned Snake::BFS(Index start, Index end)
 			case 3: dir = RIGHT;
 				break;
 			}
+			Index newIdx = idx+dir;
+			bool safeCross = true;
 
-			if( !explored[idx+dir] && !field->isWall(idx+dir)) {
+			if(field->isSnake(newIdx)) {
+				safeCross = false;
+				int len = lenMap[idx]+1;
+				int count = 0;
+				for(auto index : snake) {
+					if(count < len && index == newIdx) {
+						safeCross = true;
+						break;
+					}
+					else if(count >= len)
+						break;
+					count++;
+				}
+			}
+
+			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross) {
 				q.push(idx+dir);
 				lenMap[idx+dir] = lenMap[idx]+1;
 				explored[idx+dir] = true;
+				if(debugFlag == true)
+					printMap(lenMap);
 			}
 		}
 
