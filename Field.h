@@ -25,7 +25,8 @@ struct Snake;
 struct Field
 {
 public:
-	Field(const Snake* snake);
+	Field();
+	void init(const Snake* snake);
 	void move();
 	unsigned fieldSize() const;
 	unsigned fieldWidth() const;
@@ -35,6 +36,7 @@ public:
 	bool isEmpty(Index idx) const;
 	void moveSnake(const Snake* snake);		// draw new snake location of field
 	void growSnake(const Snake* snake);
+	void display() const;
 
 private:
 	Index foodGen();			// generate new food index and set field[new index] to be the food
@@ -42,7 +44,7 @@ private:
 
 /*	static const unsigned WIDTH = 22;
 	static const unsigned HEIGHT = 12;*/
-	Index field[FIELD_SIZE];
+	field_elem field[FIELD_SIZE];
 	bool hasBeenEaten;
 	Index foodIdx;
 

@@ -8,17 +8,33 @@
 #include "Snake.h"
 #include "Utils.h"
 #include <random>
+using std::cout;
+using std::endl;
 
-Field::Field(const Snake* snake)
+Field::Field()
 {
-	hasBeenEaten = false;
-	foodIdx = foodGen();
+	hasBeenEaten = true;
+	foodIdx = 0;
 	for(Index i=0; i!=FIELD_SIZE; i++) {
 		if(i < WIDTH || i > FIELD_SIZE-WIDTH-1 || i % WIDTH == 0 || i % WIDTH == WIDTH-1)
 			field[i] = WALL;
 		else
 			field[i] = EMPTY_SLOT;
 	}
+}
+
+void Field::init(const Snake* snake)
+{
+	hasBeenEaten = true;
+	field[foodIdx = foodGen()] = FOOD;
+
+	Index body = snake->getHeadIdx();
+	while(body != snake->getTailIdx()) {
+		field[body] = SNAKE_BODY;
+		body += -snake->getCurrDir();
+	}
+
+	field[body] = SNAKE_BODY;
 }
 
 unsigned Field::fieldSize() const
@@ -96,4 +112,14 @@ Index Field::foodGen()
 	} while(field[i] != EMPTY_SLOT);
 
 	return i;
+}
+
+void Field::display() const
+{
+	for(Index idx=0; idx != FIELD_SIZE; idx++) {
+		if(idx % WIDTH == 0)
+			cout << endl;
+		cout << field[idx];
+	}
+	cout << endl;
 }
