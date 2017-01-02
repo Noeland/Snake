@@ -192,18 +192,23 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 			bool safeCross = true;
 
 			if(field->isSnake(newIdx)) {
-				safeCross = false;
-				int len = lenMap[idx]+1;
-				int count = 0;
-				for(auto index : snake) {
-					if(count < len && index == newIdx) {
-						safeCross = true;
-						break;
+
+				if(length != 2) {
+					safeCross = false;
+					int len = lenMap[idx]+1;
+					int count = 0;
+					for(auto index : snake) {
+						if(count < len && index == newIdx) {
+							safeCross = true;
+							break;
+						}
+						else if(count >= len)
+							break;
+						count++;
 					}
-					else if(count >= len)
-						break;
-					count++;
 				}
+				else
+					safeCross = false;
 			}
 
 			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross) {
