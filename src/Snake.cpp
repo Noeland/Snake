@@ -11,6 +11,9 @@
 #include <queue>
 #include <stack>
 #include <climits>
+#include <cstring>
+#include <curses.h>
+#include <ncurses.h>
 #include "Utils.h"
 using namespace std;
 

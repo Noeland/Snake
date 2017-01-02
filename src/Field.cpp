@@ -29,7 +29,7 @@ void Field::init(const Snake* snake)
 	field[foodIdx = foodGen()] = FOOD;
 
 	Index body = snake->getHeadIdx();
-	int cnt=0;
+	unsigned cnt=0;
 	while(body != snake->getTailIdx()) {
 		field[body] = SNAKE_BODY;
 		body += -snake->getCurrDir();
