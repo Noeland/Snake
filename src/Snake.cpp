@@ -72,6 +72,25 @@ Snake::Snake(const Snake& other)
 
 void Snake::moveTo(bool isVirtual)
 {
+	if(isVirtual == true) {
+		if(!path.empty()) {
+			currDir = path.top();
+			path.pop();
+		}
+
+		Index newHead = getHeadIdx() + currDir;
+
+		if(field->isFood(newHead))
+			return grow(isVirtual);
+
+		if(!snake.empty()) {
+			popTail();					// erase the old tail
+			insertHead(newHead);		// insert new head
+		}
+		else
+			unix_error("Virtual Snake has empty body.");
+	}
+
 	if(!path.empty()) {
 		currDir = path.top();
 		path.pop();
@@ -99,7 +118,8 @@ void Snake::grow(bool isVirtual)
 	Index newHead = getHeadIdx() + currDir;
 
 	if(!snake.empty()) {
-		field->growSnake(this);
+		if(isVirtual == false)		// sync the change to field only if isVirtual == false
+			field->growSnake(this);
 		insertHead(newHead);
 		length++;
 	}
