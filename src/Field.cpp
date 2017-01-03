@@ -8,18 +8,24 @@
 #include "Snake.h"
 #include "Utils.h"
 #include <random>
+#include <vector>
 using std::cout;
 using std::endl;
+using std::vector;
 
 Field::Field()
 {
+	num_empty=0;
+	hasWin = false;
 	hasBeenEaten = true;
 	foodIdx = 0;
 	for(Index i=0; i!=FIELD_SIZE; i++) {
 		if(i < WIDTH || i > FIELD_SIZE-WIDTH-1 || i % WIDTH == 0 || i % WIDTH == WIDTH-1)
 			field[i] = WALL;
-		else
+		else {
 			field[i] = EMPTY_SLOT;
+			num_empty++;
+		}
 	}
 }
 
@@ -39,12 +45,19 @@ void Field::init(const Snake* snake)
 	if(cnt != snake->getLength()-1)
 		unix_error("Initialization failed due to unconsistent length");
 	field[body] = SNAKE_BODY;
+	num_empty -= cnt+1;
 }
 
 void Field::move()
 {
 	if(hasBeenEaten)
 		foodIdx = foodGen();
+
+	if(foodIdx == -1) {
+		hasWin = true;
+		return;
+	}
+
 	field[foodIdx] = FOOD;
 }
 
@@ -115,13 +128,19 @@ void Field::growSnake(const Snake* snake)
 	if(old_head+dir == foodIdx && hasBeenEaten == false) {
 		hasBeenEaten = true;
 		field[foodIdx]=SNAKE_BODY;
+		num_empty--;
 	}
 	else
 		unix_error("Grow without food!");
 }
 
+vector<Index> idxRecord;
 Index Field::foodGen()
 {
+	if(num_empty == 0) {
+		hasWin = true;
+		return -1;
+	}
 	if(hasBeenEaten == false) {
 		if(field[foodIdx] == FOOD) {
 			return foodIdx;
@@ -131,14 +150,15 @@ Index Field::foodGen()
 	}
 
 	std::default_random_engine generator;
-	// std::random_device rd;
+	std::random_device rd;
 	std::uniform_int_distribution<int> distribution(0, FIELD_SIZE-1);
 
 	Index i;
 	do {
-		i = distribution(generator);
+		i = distribution(rd);
 	} while(field[i] != EMPTY_SLOT);
 
+	idxRecord.push_back(i);
 	hasBeenEaten = false;
 	return i;
 }

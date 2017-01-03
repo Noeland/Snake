@@ -9,9 +9,10 @@
 #define FIELD_H_
 
 #include "Utils.h"
+#include <vector>
 
-const Direc UP = -22;
-const Direc DOWN = 22;
+const Direc UP = -WIDTH;
+const Direc DOWN = WIDTH;
 const Direc RIGHT = 1;
 const Direc LEFT = -1;
 
@@ -20,6 +21,8 @@ const field_elem FOOD = '@';
 const field_elem WALL = 'X';
 const field_elem SNAKE_BODY = '*';
 const unsigned FIELD_SIZE = WIDTH * HEIGHT;
+
+extern std::vector<Index> idxRecord;
 
 struct Snake;
 struct Field
@@ -37,6 +40,7 @@ public:
 	bool isEmpty(Index idx) const;
 	bool isSnake(Index idx) const;
 	bool isWall(Index idx) const;
+	bool youWin() const { return hasWin; };
 	void moveSnake(const Snake* snake);		// draw new snake location of field
 	void growSnake(const Snake* snake);
 	void display(const Snake& s) const;
@@ -50,6 +54,8 @@ private:
 	field_elem field[FIELD_SIZE];
 	bool hasBeenEaten;
 	Index foodIdx;
+	unsigned num_empty;
+	bool hasWin;
 
 };
 
