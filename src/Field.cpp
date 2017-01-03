@@ -31,9 +31,6 @@ Field::Field()
 
 void Field::init(const Snake* snake)
 {
-	hasBeenEaten = true;
-	field[foodIdx = foodGen()] = FOOD;
-
 	Index body = snake->getHeadIdx();
 	unsigned cnt=0;
 	while(body != snake->getTailIdx()) {
@@ -46,6 +43,9 @@ void Field::init(const Snake* snake)
 		unix_error("Initialization failed due to unconsistent length");
 	field[body] = SNAKE_BODY;
 	num_empty -= cnt+1;
+
+	hasBeenEaten = true;
+	field[foodIdx = foodGen()] = FOOD;
 }
 
 void Field::move()
@@ -88,7 +88,7 @@ Index Field::getFoodIdx() const
 
 bool Field::isFood(Index idx) const
 {
-		return idx == foodIdx;
+		return field[idx] == FOOD;
 }
 
 bool Field::isEmpty(Index idx) const
@@ -134,7 +134,6 @@ void Field::growSnake(const Snake* snake)
 		unix_error("Grow without food!");
 }
 
-vector<Index> idxRecord;
 Index Field::foodGen()
 {
 	if(num_empty == 0) {
@@ -158,7 +157,6 @@ Index Field::foodGen()
 		i = distribution(rd);
 	} while(field[i] != EMPTY_SLOT);
 
-	idxRecord.push_back(i);
 	hasBeenEaten = false;
 	return i;
 }

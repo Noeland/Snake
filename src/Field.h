@@ -22,8 +22,6 @@ const field_elem WALL = 'X';
 const field_elem SNAKE_BODY = '*';
 const unsigned FIELD_SIZE = WIDTH * HEIGHT;
 
-extern std::vector<Index> idxRecord;
-
 struct Snake;
 struct Field
 {
@@ -44,6 +42,8 @@ public:
 	void moveSnake(const Snake* snake);		// draw new snake location of field
 	void growSnake(const Snake* snake);
 	void display(const Snake& s) const;
+	void turnOffFood() { field[foodIdx] = EMPTY_SLOT; }
+	void turnOnFood() { field[foodIdx] = FOOD; }
 
 private:
 	Index foodGen();			// generate new food index and set field[new index] to be the food
