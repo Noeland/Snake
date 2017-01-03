@@ -14,11 +14,14 @@
 #include <cstring>
 #include <curses.h>
 #include <ncurses.h>
+#include <cstdlib>
 #include "Utils.h"
-using namespace std;
+using std::vector;
+using std::stack;
+using std::queue;
 
 const Direc INIT_DIR = RIGHT;
-const unsigned INIT_LEN = 1;
+const unsigned INIT_LEN = 5;
 const Index INIT_IDX = getIdx(1,1);
 
 inline void printMap(bool arr[])
@@ -153,7 +156,7 @@ void Snake::move()
 
 	// Virtual
 	Snake backup_snake = *this;
-	BFS(getHeadIdx(), field->getFoodIdx(), path);
+	myBFS(getHeadIdx(), field->getFoodIdx(), path);
 
 	if(!path.empty()) {
 		stack<Direc> backup_path = path;
@@ -163,7 +166,7 @@ void Snake::move()
 			moveTo(true);
 		} while(!path.empty() && len == length);
 
-		BFS(getHeadIdx(), getTailIdx(), path);
+		myBFS(getHeadIdx(), getTailIdx(), path);
 		bool solved = !path.empty();
 
 		if(solved) {
@@ -206,7 +209,7 @@ void Snake::chaseTail()
 }
 
 static bool debugFlag = false;
-unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
+unsigned Snake::myBFS(Index start, Index end, stack<Direc>& Path)
 {
 	unsigned size = field->fieldSize();
 
@@ -238,10 +241,8 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 				path.push(-dirMap[idx]);
 				idx += dirMap[idx];
 			}
-			if(end == field->getFoodIdx())
-				Path = path;
-			else
-				Path.push(path.top());
+
+			Path.push(path.top());
 
 			return lenMap[end];
 		}
@@ -249,13 +250,13 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 		for(int i=0; i!=4; i++) {
 			Direc dir;
 			switch(i) {
-			case 0: dir = UP;
+			case 0: dir = currDir;
 				break;
-			case 1: dir = DOWN;
+			case 1: dir = -currDir;
 				break;
-			case 2: dir = LEFT;
+			case 2: dir = (currDir == UP || currDir == DOWN ) ? RIGHT : UP;
 				break;
-			case 3: dir = RIGHT;
+			case 3: dir = (currDir == UP || currDir == DOWN ) ? LEFT : DOWN;
 				break;
 			}
 			Index newIdx = idx+dir;
@@ -319,8 +320,9 @@ unsigned Snake::DFS(Index start, Index end)
 			return lenMap[end];
 		}
 
+		Direc dir;
+		int manhdist[5];
 		for(int i=0; i!=4; i++) {
-			Direc dir;
 			switch(i) {
 			case 0: dir = UP;
 			break;
@@ -329,6 +331,30 @@ unsigned Snake::DFS(Index start, Index end)
 			case 2: dir = LEFT;
 			break;
 			case 3: dir = RIGHT;
+			break;
+			}
+			manhdist[i] = abs( (idx+dir)/WIDTH - end/WIDTH) + abs((idx+dir) % WIDTH - end % WIDTH);
+		}
+
+		int max_idx = 4;
+		manhdist[max_idx] = 0;
+		for(int i=0; i!=4; i++) {
+			if(manhdist[i] > manhdist[max_idx])
+				max_idx = i;
+		}
+
+		Direc directions[4] = {UP, DOWN, LEFT, RIGHT};
+		Direc newdir = directions[max_idx];
+
+		for(int i=0; i!=4; i++) {
+			switch(i) {
+			case 0: dir = newdir;
+			break;
+			case 1: dir = -newdir;
+			break;
+			case 2: dir = (newdir == UP || newdir == DOWN) ? RIGHT : UP;
+			break;
+			case 3: dir = (newdir == UP || newdir == DOWN) ? LEFT : DOWN;
 			break;
 			}
 

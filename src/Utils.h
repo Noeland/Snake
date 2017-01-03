@@ -13,10 +13,10 @@
 
 typedef char field_elem;
 typedef int Direc;
-typedef unsigned Index;
+typedef int Index;
 
-const unsigned WIDTH = 42;
-const unsigned HEIGHT = 22;
+const int WIDTH = 12;
+const int HEIGHT = 7;
 
 #define getIdx(i,j) i*WIDTH + j
 
