@@ -41,7 +41,7 @@ int main() {
 		f.display(s);
 		s.move();
 		f.move();
-		usleep(1000* 100);
+		usleep(1000* 1);
 	}
 
 	ClearScreen();

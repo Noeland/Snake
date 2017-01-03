@@ -263,28 +263,6 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 			if(isBody[newIdx] && newIdx != getTailIdx())
 				safeCross = false;
 
-//
-//
-//			if(isBody[newIdx]) {
-//
-//				if(length != 2) {
-//					safeCross = false;
-//					int len = lenMap[idx]+1;
-//					int count = 0;
-//					for(auto index : snake) {
-//						if(count < len && index == newIdx) {
-//							safeCross = true;
-//							break;
-//						}
-//						else if(count >= len)
-//							break;
-//						count++;
-//					}
-//				}
-//				else
-//				  safeCross = false;
-//			}
-
 			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross) {
 				q.push(idx+dir);
 				lenMap[idx+dir] = lenMap[idx]+1;
@@ -356,26 +334,8 @@ unsigned Snake::DFS(Index start, Index end)
 
 			Index newIdx = idx+dir;
 			bool safeCross = true;
-
-			if(isBody[newIdx]) {
-
-				if(length != 2) {
-					safeCross = false;
-					int len = lenMap[idx]+1;
-					int count = 0;
-					for(auto index : snake) {
-						if(count < len && index == newIdx) {
-							safeCross = true;
-							break;
-						}
-						else if(count >= len)
-							break;
-						count++;
-					}
-				}
-				else
-					safeCross = false;
-			}
+			if(isBody[newIdx] && newIdx != getTailIdx())
+				safeCross = false;
 
 			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross && !field->isFood(idx+dir)) {
 				q.push(idx+dir);
