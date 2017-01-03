@@ -18,7 +18,7 @@
 using namespace std;
 
 const Direc INIT_DIR = RIGHT;
-const unsigned INIT_LEN = 2;
+const unsigned INIT_LEN = 1;
 const Index INIT_IDX = getIdx(1,1);
 
 inline void printMap(bool arr[])
@@ -174,12 +174,33 @@ void Snake::move()
 		}
 		else {
 			*this = backup_snake;
-			BFS(getHeadIdx(), getTailIdx(), path);
-			moveTo();
-			return;
+
+			return chaseTail();
 		}
 	}
 
+	return chaseTail();
+//	moveTo();
+}
+
+void Snake::chaseTail()
+{
+	Direc directions[4] = {UP, DOWN, LEFT, RIGHT};
+	unsigned len[5];
+	for(int i = 0; i != 4; i++)
+		len[i] = DFS(getHeadIdx()+directions[i], getTailIdx());
+
+	unsigned max_idx = 4;
+	len[max_idx] = 0;
+	for(int i=0; i!=4; i++) {
+		if(len[i] > len[max_idx])
+			max_idx = i;
+	}
+
+	if(len[max_idx] != 0)
+		path.push(directions[max_idx]);
+	else
+		path.push(currDir);
 
 	moveTo();
 }
@@ -239,6 +260,102 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 			}
 			Index newIdx = idx+dir;
 			bool safeCross = true;
+			if(isBody[newIdx] && newIdx != getTailIdx())
+				safeCross = false;
+
+//
+//
+//			if(isBody[newIdx]) {
+//
+//				if(length != 2) {
+//					safeCross = false;
+//					int len = lenMap[idx]+1;
+//					int count = 0;
+//					for(auto index : snake) {
+//						if(count < len && index == newIdx) {
+//							safeCross = true;
+//							break;
+//						}
+//						else if(count >= len)
+//							break;
+//						count++;
+//					}
+//				}
+//				else
+//				  safeCross = false;
+//			}
+
+			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross) {
+				q.push(idx+dir);
+				lenMap[idx+dir] = lenMap[idx]+1;
+				explored[idx+dir] = true;
+				dirMap[idx+dir] = -dir;
+				if(debugFlag == true)
+					printMap(lenMap);
+			}
+		}
+
+	}
+
+	return 0;
+
+}
+
+unsigned Snake::DFS(Index start, Index end)
+{
+
+	if(start-getHeadIdx() == -currDir)
+		return 0;
+
+	if(isDeadMove(start-getHeadIdx()))
+		return 0;
+
+	if(field->isFood(start))
+		return 0;
+
+	unsigned size = field->fieldSize();
+
+	bool explored[size];
+	unsigned lenMap[size];
+	Direc dirMap[size];
+	bool isBody[size];
+	memset(explored, 0, size * sizeof(bool));
+	memset(lenMap, 0, size * sizeof(unsigned));
+	memset(dirMap, 0 , size * sizeof(Direc));
+	memset(isBody, 0, size*sizeof(bool));
+	lenMap[start] = 1;
+	explored[start] = true;
+
+	for(auto i : snake)
+		isBody[i] = true;
+
+	stack<Index> q;
+	q.push(start);
+	Index idx = start;
+
+	while(!q.empty()) {
+		idx = q.top();
+		q.pop();
+
+		if(idx == end) {
+			return lenMap[end];
+		}
+
+		for(int i=0; i!=4; i++) {
+			Direc dir;
+			switch(i) {
+			case 0: dir = UP;
+			break;
+			case 1: dir = DOWN;
+			break;
+			case 2: dir = LEFT;
+			break;
+			case 3: dir = RIGHT;
+			break;
+			}
+
+			Index newIdx = idx+dir;
+			bool safeCross = true;
 
 			if(isBody[newIdx]) {
 
@@ -257,14 +374,13 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 					}
 				}
 				else
-				  safeCross = false;
+					safeCross = false;
 			}
 
-			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross) {
+			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross && !field->isFood(idx+dir)) {
 				q.push(idx+dir);
 				lenMap[idx+dir] = lenMap[idx]+1;
 				explored[idx+dir] = true;
-				dirMap[idx+dir] = -dir;
 				if(debugFlag == true)
 					printMap(lenMap);
 			}
@@ -273,5 +389,4 @@ unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 	}
 
 	return 0;
-
 }

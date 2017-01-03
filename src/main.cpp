@@ -35,17 +35,22 @@ int main() {
 	Snake s(&f);
 	f.init(&s);
 
-	while(!s.Dead())
+	while(!s.Dead() && !f.youWin())
 	{
 		ClearScreen();
 		f.display(s);
 		s.move();
 		f.move();
-		usleep(1000* 5);
+		usleep(1000* 100);
 	}
 
 	ClearScreen();
 	f.display(s);
+
+	for(auto i : idxRecord) {
+		cout << i << ' ';
+	}
+	cout << endl;
 
 
 }
