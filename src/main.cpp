@@ -29,8 +29,6 @@ void ClearScreen()
 
 
 int main() {
-	cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
-
 	Field f;
 	Snake s(&f);
 	f.init(&s);
@@ -41,15 +39,16 @@ int main() {
 		f.display(s);
 		s.move();
 		f.move();
-		usleep(1000* 500);
+		usleep(1000* 5);
 	}
 
 	ClearScreen();
 	f.display(s);
 
-	for(auto i : idxRecord) {
-		cout << i << ' ';
-	}
+	if(f.youWin())
+		cout << "Congratulation!" << endl;
+	else
+		cout << "That's bad!" << endl;
 	cout << endl;
 
 

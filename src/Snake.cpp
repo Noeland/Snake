@@ -156,9 +156,10 @@ void Snake::move()
 
 	// Virtual
 	Snake backup_snake = *this;
-	myBFS(getHeadIdx(), field->getFoodIdx(), path);
+	myBFS(getHeadIdx()+currDir, field->getFoodIdx(), path);
 
 	if(!path.empty()) {
+		path.push(currDir);
 		stack<Direc> backup_path = path;
 
 		unsigned len = length;
@@ -166,8 +167,10 @@ void Snake::move()
 			moveTo(true);
 		} while(!path.empty() && len == length);
 
-		myBFS(getHeadIdx(), getTailIdx(), path);
-		bool solved = !path.empty();
+		field->turnOffFood();
+		bool solved = DFS(getHeadIdx(), getTailIdx()) != 0;
+		field->turnOnFood();
+//		bool solved = !path.empty();
 
 		if(solved) {
 			*this = backup_snake;
@@ -202,8 +205,24 @@ void Snake::chaseTail()
 
 	if(len[max_idx] != 0)
 		path.push(directions[max_idx]);
-	else
-		path.push(currDir);
+	else {
+		field->turnOffFood();
+		for(int i = 0; i != 4; i++)
+			len[i] = DFS(getHeadIdx()+directions[i], field->getFoodIdx());
+		field->turnOnFood();
+
+		max_idx=4;
+		len[max_idx] = 0;
+		for(int i=0; i!=4; i++) {
+			if(len[i] > len[max_idx])
+				max_idx = i;
+		}
+
+		if(len[max_idx] !=0)
+			path.push(directions[max_idx]);
+		else
+			path.push(currDir);
+	}
 
 	moveTo();
 }
@@ -211,6 +230,9 @@ void Snake::chaseTail()
 static bool debugFlag = false;
 unsigned Snake::myBFS(Index start, Index end, stack<Direc>& Path)
 {
+	if(start-getHeadIdx() == - currDir || (start-getHeadIdx() != 0 && isDeadMove(start-getHeadIdx())))
+		return 0;
+
 	unsigned size = field->fieldSize();
 
 	bool explored[size];
@@ -241,8 +263,10 @@ unsigned Snake::myBFS(Index start, Index end, stack<Direc>& Path)
 				path.push(-dirMap[idx]);
 				idx += dirMap[idx];
 			}
+//			if(!path.empty())
+//				Path.push(path.top());
 
-			Path.push(path.top());
+			Path = path;
 
 			return lenMap[end];
 		}
