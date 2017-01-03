@@ -208,6 +208,10 @@ void Snake::chaseTail()
 static bool debugFlag = false;
 unsigned Snake::BFS(Index start, Index end, stack<Direc>& Path)
 {
+	Direc newdir = start-getHeadIdx();
+	if((newdir != 0 && isDeadMove(newdir)) || newdir == -currDir)
+			return 0;
+
 	unsigned size = field->fieldSize();
 
 	bool explored[size];
