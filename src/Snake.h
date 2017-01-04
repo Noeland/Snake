@@ -26,7 +26,7 @@ struct Snake
 	inline unsigned getLength() const;
 	bool Dead() { return isDead; }
 	void move();
-private:
+//private:
 	void moveTo(bool isVirtual=false);			// move according to current direction.
 	void grow(bool isVirtual=false);
 	bool isDeadMove(Direc Dir) const;
@@ -34,6 +34,8 @@ private:
 	inline void insertHead(Index newhead);
 	unsigned myBFS(Index start, Index end, std::stack<Direc> *Path);
 	unsigned DFS(Index start, Index end, std::stack<Direc> *Path);
+	unsigned testDFS(Index start, Index end, std::stack<Direc> *Path, int lenMap[]);
+	unsigned testBFS(Index start, Index end, std::stack<Direc> *Path, int lenMap[]);
 	void chaseTail();
 
 
@@ -77,4 +79,21 @@ inline unsigned Snake::getLength() const
 	return length;
 }
 
+
+inline void printMap(int arr[])
+{
+	int size = WIDTH * HEIGHT;
+	for(int i=0; i!=size; i++) {
+		if(i%WIDTH == 0)
+			std::cout << std::endl;
+		if(arr[i] != 0 && arr[i]!=-1) {
+			std::cout << "\033[1;34m";
+			std::cout.width(4); std::cout << std::right << arr[i] << "\033[0m";
+		}
+		else {
+			std::cout.width(4); std::cout << std::right << arr[i];
+		}
+	}
+	std::cout << std::endl;
+}
 #endif /* SNAKE_H_ */

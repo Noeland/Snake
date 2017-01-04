@@ -21,36 +21,8 @@ using std::stack;
 using std::queue;
 
 const Direc INIT_DIR = RIGHT;
-const unsigned INIT_LEN = 5;
-const Index INIT_IDX = getIdx(1,1);
-
-inline void printMap(bool arr[])
-{
-	unsigned size = WIDTH * HEIGHT;
-	for(unsigned i=0; i!=size; i++) {
-		if(i%WIDTH == 0)
-			std::cout << std::endl;
-		std::cout.width(4); std::cout << std::right << arr[i];
-	}
-	std::cout << std::endl;
-}
-
-inline void printMap(unsigned arr[])
-{
-	unsigned size = WIDTH * HEIGHT;
-	for(unsigned i=0; i!=size; i++) {
-		if(i%WIDTH == 0)
-			std::cout << std::endl;
-		if(arr[i] != 0) {
-			std::cout << "\033[1;31m";
-			std::cout.width(4); std::cout << std::right << arr[i] << "\033[0m";
-		}
-		else {
-			std::cout.width(4); std::cout << std::right << 0;
-		}
-	}
-	std::cout << std::endl;
-}
+const unsigned INIT_LEN = 1;
+const Index INIT_IDX = getIdx(12,6);
 
 Snake::Snake(Field *f)
 {
@@ -255,7 +227,7 @@ unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 	unsigned size = field->fieldSize();
 
 	bool explored[size];
-	unsigned lenMap[size];
+	int lenMap[size];
 	Direc dirMap[size];
 	bool isBody[size];
 	memset(explored, 0, size * sizeof(bool));
@@ -358,7 +330,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 	unsigned size = field->fieldSize();
 
 	bool explored[size];
-	unsigned lenMap[size];
+	int lenMap[size];
 	Direc dirMap[size];
 	bool isBody[size];
 	memset(explored, 0, size * sizeof(bool));
@@ -503,8 +475,11 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 				lenMap[idx+dir] = lenMap[idx]+1;
 				explored[idx+dir] = true;
 				dirMap[idx+dir] = -dir;
-				if(debugFlag == true)
+				if(true) {
+					ClearScreen();
 					printMap(lenMap);
+					usleep(1000 * 30);
+				}
 			}
 		}
 
@@ -512,4 +487,273 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 
 	*this = backupSnake;
 	return 0;
+}
+
+unsigned Snake::testDFS(Index start, Index end, std::stack<Direc> *Path, int lenMap[])
+{
+
+	if(start-getHeadIdx() == -currDir)
+		return 0;
+
+	if(start != getHeadIdx() && isDeadMove(start-getHeadIdx()))
+		return 0;
+
+	if(Path != nullptr && !Path->empty())
+		unix_error("Non-empeth path stack in DFS!");
+
+	Snake backupSnake = *this;
+	if(field->isFood(start)) {
+		this->grow(true);
+	}
+
+	unsigned size = field->fieldSize();
+
+	bool explored[size];
+	Direc dirMap[size];
+	bool isBody[size];
+	memset(explored, 0, size * sizeof(bool));
+	memset(lenMap, 0, size * sizeof(unsigned));
+	memset(dirMap, 0 , size * sizeof(Direc));
+	memset(isBody, 0, size*sizeof(bool));
+	lenMap[start] = 0;
+	explored[start] = true;
+
+	for(auto i : snake)
+		isBody[i] = true;
+
+	stack<Index> q;
+	q.push(start);
+	Index idx = start;
+
+	while(!q.empty()) {
+		idx = q.top();
+		q.pop();
+		explored[idx] = true;
+
+		if(idx == end) {
+
+			while(idx != start && Path != nullptr) {
+				Path->push(-dirMap[idx]);
+				idx += dirMap[idx];
+			}
+			return lenMap[end];
+		}
+
+		Direc dir;
+		int manhdist[5];
+		for(int i=0; i!=4; i++) {
+			switch(i) {
+			case 0: dir = UP;
+			break;
+			case 1: dir = DOWN;
+			break;
+			case 2: dir = LEFT;
+			break;
+			case 3: dir = RIGHT;
+			break;
+			}
+			if(!isBody[idx+dir] && !field->isWall(idx+dir) && !explored[idx+dir])
+				manhdist[i] = abs( (idx+dir)/WIDTH - end/WIDTH) + abs((idx+dir) % WIDTH - end % WIDTH);
+			else
+				manhdist[i] = 0;
+		}
+
+		int max_idx = 4, secmax=4, thirdmax=4, last=4;
+		manhdist[max_idx] = 0;
+		for(int i=0; i!=4; i++) {
+			if(manhdist[i] >= manhdist[max_idx]) {
+				last = thirdmax;
+				thirdmax = secmax;
+				secmax = max_idx;
+				max_idx = i;
+			}
+			else if(manhdist[i] >= manhdist[secmax]) {
+				last = thirdmax;
+				thirdmax = secmax;
+				secmax = i;
+			}
+			else if(manhdist[i] >= manhdist[thirdmax]) {
+				last = thirdmax;
+				thirdmax = i;
+			}
+			else {
+				last = i;
+			}
+		}
+
+		Direc bestdir = start ? currDir : -dirMap[idx];
+		Direc directions[4] = {UP, DOWN, LEFT, RIGHT};
+		Direc dir1, dir2, dir3, dir4;
+		if(manhdist[max_idx] != manhdist[secmax]) {
+			dir1 = directions[max_idx];
+			dir2 = directions[secmax];
+			dir3 = directions[thirdmax];
+			dir4 = directions[last];
+		}
+		else if(manhdist[secmax] != manhdist[thirdmax]) {
+			if(directions[secmax]==bestdir) {
+				dir1 = bestdir;
+				dir2 = directions[max_idx];
+				dir3 = directions[thirdmax];
+				dir4 = directions[last];
+			}
+			else {
+				dir1 = directions[max_idx];
+				dir2 = directions[secmax];
+				dir3 = directions[thirdmax];
+				dir4 = directions[last];
+			}
+		}
+		else if(manhdist[thirdmax] != manhdist[last]) {
+			if(directions[secmax]==bestdir || directions[thirdmax] == bestdir) {
+				dir1 = bestdir;
+				dir2 = directions[max_idx];
+				dir3 = directions[thirdmax] == bestdir ? directions[secmax] : directions[thirdmax];
+				dir4 = directions[last];
+			}
+			else {
+				dir1 = directions[max_idx];
+				dir2 = directions[secmax];
+				dir3 = directions[thirdmax];
+				dir4 = directions[last];
+			}
+		}
+		else if(manhdist[max_idx] != 0){
+			dir1 = directions[max_idx];
+			dir2 = directions[secmax];
+			dir3 = directions[thirdmax];
+			dir4 = directions[last];
+		}
+		else {
+			dir1 = bestdir;
+			dir2 = -bestdir;
+			dir3 = (bestdir == UP || bestdir == DOWN) ? RIGHT : UP;
+			dir4 =  (bestdir == UP || bestdir == DOWN) ?  LEFT : DOWN;
+		}
+
+
+		for(int i=0; i!=4; i++) {
+			switch(i) {
+			case 3: dir = dir1;
+			break;
+			case 2: dir = dir2;
+			break;
+			case 1: dir = dir3;
+			break;
+			case 0: dir = dir4;
+			break;
+			}
+
+			Index newIdx = idx+dir;
+			bool safeCross = true;
+			if(isBody[newIdx] && newIdx != getTailIdx())
+				safeCross = false;
+
+			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross ) {
+				q.push(idx+dir);
+				lenMap[idx+dir] = lenMap[idx]+1;
+				dirMap[idx+dir] = -dir;
+				if(true) {
+					ClearScreen();
+					printMap(lenMap);
+					usleep(1000 * 10);
+				}
+			}
+		}
+
+	}
+
+	*this = backupSnake;
+	return 0;
+}
+
+unsigned Snake::testBFS(Index start, Index end, std::stack<Direc> *Path, int lenMap[])
+{
+	if(start-getHeadIdx() == - currDir || (start-getHeadIdx() != 0 && isDeadMove(start-getHeadIdx())))
+		return 0;
+	if(Path != nullptr && !Path->empty())
+		unix_error("Get non-empty path stack!");
+
+	unsigned size = field->fieldSize();
+
+	Direc dirMap[size];
+	bool isBody[size];
+	memset(lenMap, 0xff, size * sizeof(int));
+	memset(dirMap, 0 , size * sizeof(Direc));
+	memset(isBody, 0, size*sizeof(bool));
+	lenMap[start] = 0;
+
+	for(auto i : snake)
+		isBody[i] = true;
+
+	queue<Index> q;
+	q.push(start);
+	Index idx = start;
+
+	while(!q.empty()) {
+		idx = q.front();
+		q.pop();
+
+		if(idx == end) {
+			while(idx != start && Path!=nullptr) {
+				Path->push(-dirMap[idx]);
+				idx += dirMap[idx];
+			}
+//			if(!path.empty())
+//				Path.push(path.top());
+
+			return lenMap[end];
+		}
+
+		Direc nextdir = idx == start ? currDir : -dirMap[idx];
+		for(int i=0; i!=4; i++) {
+			Direc dir;
+			switch(i) {
+			case 0: dir = nextdir;
+				break;
+			case 1: dir = -nextdir;
+				break;
+			case 2: dir = (nextdir == UP || nextdir == DOWN ) ? RIGHT : UP;
+				break;
+			case 3: dir = (nextdir == UP || nextdir == DOWN ) ? LEFT : DOWN;
+				break;
+			}
+			Index newIdx = idx+dir;
+			bool safeCross = true;
+			if(isBody[newIdx]) {
+				safeCross = false;
+				if(length != 2) {
+					int cnt=0;
+					int len = lenMap[idx]+1;
+					for(auto index : snake) {
+						if(cnt++ < len) {
+							if(index == newIdx) {
+								safeCross = true;
+								break;
+							}
+							else
+								continue;
+						}
+						else
+							break;
+					}
+				}
+			}
+
+			if( lenMap[idx+dir]==-1 && !field->isWall(idx+dir) && safeCross) {
+				q.push(idx+dir);
+				lenMap[idx+dir] = lenMap[idx]+1;
+				dirMap[idx+dir] = -dir;
+				if(true) {
+					ClearScreen();
+					printMap(lenMap);
+					usleep(1000 * 20);
+				}
+			}
+		}
+
+	}
+
+	return 0;
+
 }
