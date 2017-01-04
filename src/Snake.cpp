@@ -35,7 +35,7 @@ inline void printMap(bool arr[])
 	std::cout << std::endl;
 }
 
-inline void printMap(unsigned arr[])
+inline void printMap(int arr[])
 {
 	unsigned size = WIDTH * HEIGHT;
 	for(unsigned i=0; i!=size; i++) {
@@ -46,7 +46,7 @@ inline void printMap(unsigned arr[])
 			std::cout.width(4); std::cout << std::right << arr[i] << "\033[0m";
 		}
 		else {
-			std::cout.width(4); std::cout << std::right << 0;
+			std::cout.width(4); std::cout << std::right << arr[i];
 		}
 	}
 	std::cout << std::endl;
@@ -254,16 +254,13 @@ unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 
 	unsigned size = field->fieldSize();
 
-	bool explored[size];
-	unsigned lenMap[size];
+	int lenMap[size];
 	Direc dirMap[size];
 	bool isBody[size];
-	memset(explored, 0, size * sizeof(bool));
-	memset(lenMap, 0, size * sizeof(unsigned));
+	memset(lenMap, 0xff, size * sizeof(int));
 	memset(dirMap, 0 , size * sizeof(Direc));
 	memset(isBody, 0, size*sizeof(bool));
 	lenMap[start] = 0;
-	explored[start] = true;
 
 	for(auto i : snake)
 		isBody[i] = true;
@@ -322,10 +319,9 @@ unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 				}
 			}
 
-			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross) {
+			if( lenMap[idx+dir]==-1 && !field->isWall(idx+dir) && safeCross) {
 				q.push(idx+dir);
 				lenMap[idx+dir] = lenMap[idx]+1;
-				explored[idx+dir] = true;
 				dirMap[idx+dir] = -dir;
 				if(debugFlag == true)
 					printMap(lenMap);
@@ -358,7 +354,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 	unsigned size = field->fieldSize();
 
 	bool explored[size];
-	unsigned lenMap[size];
+	int lenMap[size];
 	Direc dirMap[size];
 	bool isBody[size];
 	memset(explored, 0, size * sizeof(bool));
@@ -378,6 +374,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 	while(!q.empty()) {
 		idx = q.top();
 		q.pop();
+		explored[idx] = true;
 
 		if(idx == end) {
 
@@ -385,6 +382,8 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 				Path->push(-dirMap[idx]);
 				idx += dirMap[idx];
 			}
+			if(length != backupSnake.getLength())
+				*this = backupSnake;
 			return lenMap[end];
 		}
 
@@ -501,7 +500,6 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross ) {
 				q.push(idx+dir);
 				lenMap[idx+dir] = lenMap[idx]+1;
-				explored[idx+dir] = true;
 				dirMap[idx+dir] = -dir;
 				if(debugFlag == true)
 					printMap(lenMap);
