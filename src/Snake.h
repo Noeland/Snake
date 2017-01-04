@@ -32,8 +32,8 @@ private:
 	bool isDeadMove(Direc Dir) const;
 	inline void popTail();
 	inline void insertHead(Index newhead);
-	unsigned myBFS(Index start, Index end, std::stack<Direc>& Path);
-	unsigned DFS(Index start, Index end);
+	unsigned myBFS(Index start, Index end, std::stack<Direc> *Path);
+	unsigned DFS(Index start, Index end, std::stack<Direc> *Path);
 	void chaseTail();
 
 

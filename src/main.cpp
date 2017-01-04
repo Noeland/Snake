@@ -29,6 +29,7 @@ void ClearScreen()
 
 
 int main() {
+
 	Field f;
 	Snake s(&f);
 	f.init(&s);
@@ -39,7 +40,7 @@ int main() {
 		f.display(s);
 		s.move();
 		f.move();
-		usleep(1000* 5);
+		usleep(1000* 200);
 	}
 
 	ClearScreen();

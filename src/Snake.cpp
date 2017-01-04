@@ -30,7 +30,7 @@ inline void printMap(bool arr[])
 	for(unsigned i=0; i!=size; i++) {
 		if(i%WIDTH == 0)
 			std::cout << std::endl;
-		std::cout << arr[i] << ' ' ;
+		std::cout.width(4); std::cout << std::right << arr[i];
 	}
 	std::cout << std::endl;
 }
@@ -41,7 +41,13 @@ inline void printMap(unsigned arr[])
 	for(unsigned i=0; i!=size; i++) {
 		if(i%WIDTH == 0)
 			std::cout << std::endl;
-		std::cout << arr[i] << ' ' ;
+		if(arr[i] != 0) {
+			std::cout << "\033[1;31m";
+			std::cout.width(4); std::cout << std::right << arr[i] << "\033[0m";
+		}
+		else {
+			std::cout.width(4); std::cout << std::right << 0;
+		}
 	}
 	std::cout << std::endl;
 }
@@ -156,10 +162,9 @@ void Snake::move()
 
 	// Virtual
 	Snake backup_snake = *this;
-	myBFS(getHeadIdx()+currDir, field->getFoodIdx(), path);
+	myBFS(getHeadIdx(), field->getFoodIdx(), &path);
 
 	if(!path.empty()) {
-		path.push(currDir);
 		stack<Direc> backup_path = path;
 
 		unsigned len = length;
@@ -168,13 +173,13 @@ void Snake::move()
 		} while(!path.empty() && len == length);
 
 		field->turnOffFood();
-		bool solved = DFS(getHeadIdx(), getTailIdx()) != 0;
+		bool solved = DFS(getHeadIdx(), getTailIdx(), nullptr) != 0;
 		field->turnOnFood();
 //		bool solved = !path.empty();
 
 		if(solved) {
 			*this = backup_snake;
-			path = backup_path;
+			currDir = backup_path.top();
 			moveTo();
 			return;
 		}
@@ -192,9 +197,10 @@ void Snake::move()
 void Snake::chaseTail()
 {
 	Direc directions[4] = {UP, DOWN, LEFT, RIGHT};
+	stack<Direc> Paths[4];
 	unsigned len[5];
 	for(int i = 0; i != 4; i++)
-		len[i] = DFS(getHeadIdx()+directions[i], getTailIdx());
+		len[i] = DFS(getHeadIdx()+directions[i], getTailIdx(), nullptr);
 
 	unsigned max_idx = 4;
 	len[max_idx] = 0;
@@ -203,12 +209,15 @@ void Snake::chaseTail()
 			max_idx = i;
 	}
 
-	if(len[max_idx] != 0)
+	if(len[max_idx] != 0) {
+		path = Paths[max_idx];
 		path.push(directions[max_idx]);
+	}
 	else {
+
 		field->turnOffFood();
 		for(int i = 0; i != 4; i++)
-			len[i] = DFS(getHeadIdx()+directions[i], field->getFoodIdx());
+			len[i] = DFS(getHeadIdx()+directions[i], field->getFoodIdx(), nullptr);
 		field->turnOnFood();
 
 		max_idx=4;
@@ -218,8 +227,10 @@ void Snake::chaseTail()
 				max_idx = i;
 		}
 
-		if(len[max_idx] !=0)
+		if(len[max_idx] !=0) {
+			path = Paths[max_idx];
 			path.push(directions[max_idx]);
+		}
 		else
 			path.push(currDir);
 	}
@@ -228,10 +239,12 @@ void Snake::chaseTail()
 }
 
 static bool debugFlag = false;
-unsigned Snake::myBFS(Index start, Index end, stack<Direc>& Path)
+unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 {
 	if(start-getHeadIdx() == - currDir || (start-getHeadIdx() != 0 && isDeadMove(start-getHeadIdx())))
 		return 0;
+	if(Path != nullptr && !Path->empty())
+		unix_error("Get non-empty path stack!");
 
 	unsigned size = field->fieldSize();
 
@@ -258,15 +271,12 @@ unsigned Snake::myBFS(Index start, Index end, stack<Direc>& Path)
 		q.pop();
 
 		if(idx == end) {
-			stack<Direc> path;
-			while(idx != start) {
-				path.push(-dirMap[idx]);
+			while(idx != start && Path!=nullptr) {
+				Path->push(-dirMap[idx]);
 				idx += dirMap[idx];
 			}
 //			if(!path.empty())
 //				Path.push(path.top());
-
-			Path = path;
 
 			return lenMap[end];
 		}
@@ -304,7 +314,7 @@ unsigned Snake::myBFS(Index start, Index end, stack<Direc>& Path)
 
 }
 
-unsigned Snake::DFS(Index start, Index end)
+unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 {
 
 	if(start-getHeadIdx() == -currDir)
@@ -315,6 +325,9 @@ unsigned Snake::DFS(Index start, Index end)
 
 	if(field->isFood(start))
 		return 0;
+
+	if(Path != nullptr && !Path->empty())
+		unix_error("Non-empeth path stack in DFS!");
 
 	unsigned size = field->fieldSize();
 
@@ -341,6 +354,11 @@ unsigned Snake::DFS(Index start, Index end)
 		q.pop();
 
 		if(idx == end) {
+
+			while(idx != start && Path != nullptr) {
+				Path->push(-dirMap[idx]);
+				idx += dirMap[idx];
+			}
 			return lenMap[end];
 		}
 
@@ -357,28 +375,94 @@ unsigned Snake::DFS(Index start, Index end)
 			case 3: dir = RIGHT;
 			break;
 			}
-			manhdist[i] = abs( (idx+dir)/WIDTH - end/WIDTH) + abs((idx+dir) % WIDTH - end % WIDTH);
+			if(!isBody[idx+dir] && !field->isWall(idx+dir) && !explored[idx+dir])
+				manhdist[i] = abs( (idx+dir)/WIDTH - end/WIDTH) + abs((idx+dir) % WIDTH - end % WIDTH);
+			else
+				manhdist[i] = 0;
 		}
 
-		int max_idx = 4;
+		int max_idx = 4, secmax=4, thirdmax=4, last=4;
 		manhdist[max_idx] = 0;
 		for(int i=0; i!=4; i++) {
-			if(manhdist[i] > manhdist[max_idx])
+			if(manhdist[i] >= manhdist[max_idx]) {
+				last = thirdmax;
+				thirdmax = secmax;
+				secmax = max_idx;
 				max_idx = i;
+			}
+			else if(manhdist[i] >= manhdist[secmax]) {
+				last = thirdmax;
+				thirdmax = secmax;
+				secmax = i;
+			}
+			else if(manhdist[i] >= manhdist[thirdmax]) {
+				last = thirdmax;
+				thirdmax = i;
+			}
+			else {
+				last = i;
+			}
 		}
 
 		Direc directions[4] = {UP, DOWN, LEFT, RIGHT};
-		Direc newdir = directions[max_idx];
+		Direc dir1, dir2, dir3, dir4;
+		if(manhdist[max_idx] != manhdist[secmax]) {
+			dir1 = directions[max_idx];
+			dir2 = directions[secmax];
+			dir3 = directions[thirdmax];
+			dir4 = directions[last];
+		}
+		else if(manhdist[secmax] != manhdist[thirdmax]) {
+			if(directions[secmax]==currDir) {
+				dir1 = currDir;
+				dir2 = directions[max_idx];
+				dir3 = directions[thirdmax];
+				dir4 = directions[last];
+			}
+			else {
+				dir1 = directions[max_idx];
+				dir2 = directions[secmax];
+				dir3 = directions[thirdmax];
+				dir4 = directions[last];
+			}
+		}
+		else if(manhdist[thirdmax] != manhdist[last]) {
+			if(directions[secmax]==currDir || directions[thirdmax] == currDir) {
+				dir1 = currDir;
+				dir2 = directions[max_idx];
+				dir3 = directions[thirdmax] == currDir ? directions[secmax] : directions[thirdmax];
+				dir4 = directions[last];
+			}
+			else {
+				dir1 = directions[max_idx];
+				dir2 = directions[secmax];
+				dir3 = directions[thirdmax];
+				dir4 = directions[last];
+			}
+		}
+		else if(manhdist[max_idx] != 0){
+			dir1 = directions[max_idx];
+			dir2 = directions[secmax];
+			dir3 = directions[thirdmax];
+			dir4 = directions[last];
+		}
+		else {
+			dir1 = currDir;
+			dir2 = -currDir;
+			dir3 = (currDir == UP || currDir == DOWN) ? RIGHT : UP;
+			dir4 =  (currDir == UP || currDir == DOWN) ?  LEFT : DOWN;
+		}
+
 
 		for(int i=0; i!=4; i++) {
 			switch(i) {
-			case 0: dir = newdir;
+			case 3: dir = dir1;
 			break;
-			case 1: dir = -newdir;
+			case 2: dir = dir2;
 			break;
-			case 2: dir = (newdir == UP || newdir == DOWN) ? RIGHT : UP;
+			case 1: dir = dir3;
 			break;
-			case 3: dir = (newdir == UP || newdir == DOWN) ? LEFT : DOWN;
+			case 0: dir = dir4;
 			break;
 			}
 
@@ -391,6 +475,7 @@ unsigned Snake::DFS(Index start, Index end)
 				q.push(idx+dir);
 				lenMap[idx+dir] = lenMap[idx]+1;
 				explored[idx+dir] = true;
+				dirMap[idx+dir] = -dir;
 				if(debugFlag == true)
 					printMap(lenMap);
 			}
