@@ -30,6 +30,12 @@ void ClearScreen()
 
 int main() {
 
+	cout << "Please enter frequency (How many steps in one second): ";
+	int freq;
+	cin >> freq;
+	if(freq <= 0)
+		unix_error("Invalid frequency!");
+
 	Field f;
 	Snake s(&f);
 	f.init(&s);
@@ -40,7 +46,7 @@ int main() {
 		f.display(s);
 		s.move();
 		f.move();
-		usleep(1000* 4);
+		usleep(1000* 1000/freq);
 	}
 
 	ClearScreen();

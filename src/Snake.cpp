@@ -166,8 +166,9 @@ void Snake::move()
 		path.push(currDir);
 	}
 	else {
-		DFS(getHeadIdx(), field->getFoodIdx(), &path);
+		myBFS(getHeadIdx(), field->getFoodIdx(), &path);
 	}
+//	myBFS(getHeadIdx(), field->getFoodIdx(), &path);
 
 	if(!path.empty()) {
 		stack<Direc> backup_path = path;
@@ -286,16 +287,17 @@ unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 			return lenMap[end];
 		}
 
+		Direc nextdir = idx == start ? currDir : -dirMap[idx];
 		for(int i=0; i!=4; i++) {
 			Direc dir;
 			switch(i) {
-			case 0: dir = currDir;
+			case 0: dir = nextdir;
 				break;
-			case 1: dir = -currDir;
+			case 1: dir = -nextdir;
 				break;
-			case 2: dir = (currDir == UP || currDir == DOWN ) ? RIGHT : UP;
+			case 2: dir = (nextdir == UP || nextdir == DOWN ) ? RIGHT : UP;
 				break;
-			case 3: dir = (currDir == UP || currDir == DOWN ) ? LEFT : DOWN;
+			case 3: dir = (nextdir == UP || nextdir == DOWN ) ? LEFT : DOWN;
 				break;
 			}
 			Index newIdx = idx+dir;
@@ -304,7 +306,7 @@ unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 				safeCross = false;
 				if(length != 2) {
 					int cnt=0;
-					int len = lenMap[idx] + 1;
+					int len = lenMap[idx]+1;
 					for(auto index : snake) {
 						if(cnt++ < len) {
 							if(index == newIdx) {
@@ -428,6 +430,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 			}
 		}
 
+		Direc bestdir = start ? currDir : -dirMap[idx];
 		Direc directions[4] = {UP, DOWN, LEFT, RIGHT};
 		Direc dir1, dir2, dir3, dir4;
 		if(manhdist[max_idx] != manhdist[secmax]) {
@@ -437,8 +440,8 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 			dir4 = directions[last];
 		}
 		else if(manhdist[secmax] != manhdist[thirdmax]) {
-			if(directions[secmax]==currDir) {
-				dir1 = currDir;
+			if(directions[secmax]==bestdir) {
+				dir1 = bestdir;
 				dir2 = directions[max_idx];
 				dir3 = directions[thirdmax];
 				dir4 = directions[last];
@@ -451,10 +454,10 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 			}
 		}
 		else if(manhdist[thirdmax] != manhdist[last]) {
-			if(directions[secmax]==currDir || directions[thirdmax] == currDir) {
-				dir1 = currDir;
+			if(directions[secmax]==bestdir || directions[thirdmax] == bestdir) {
+				dir1 = bestdir;
 				dir2 = directions[max_idx];
-				dir3 = directions[thirdmax] == currDir ? directions[secmax] : directions[thirdmax];
+				dir3 = directions[thirdmax] == bestdir ? directions[secmax] : directions[thirdmax];
 				dir4 = directions[last];
 			}
 			else {
@@ -471,10 +474,10 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 			dir4 = directions[last];
 		}
 		else {
-			dir1 = currDir;
-			dir2 = -currDir;
-			dir3 = (currDir == UP || currDir == DOWN) ? RIGHT : UP;
-			dir4 =  (currDir == UP || currDir == DOWN) ?  LEFT : DOWN;
+			dir1 = bestdir;
+			dir2 = -bestdir;
+			dir3 = (bestdir == UP || bestdir == DOWN) ? RIGHT : UP;
+			dir4 =  (bestdir == UP || bestdir == DOWN) ?  LEFT : DOWN;
 		}
 
 
