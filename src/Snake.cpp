@@ -162,7 +162,12 @@ void Snake::move()
 
 	// Virtual
 	Snake backup_snake = *this;
-	myBFS(getHeadIdx(), field->getFoodIdx(), &path);
+	if(myBFS(getHeadIdx()+currDir, field->getFoodIdx(), nullptr)) {
+		path.push(currDir);
+	}
+	else {
+		DFS(getHeadIdx(), field->getFoodIdx(), &path);
+	}
 
 	if(!path.empty()) {
 		stack<Direc> backup_path = path;
@@ -179,7 +184,7 @@ void Snake::move()
 
 		if(solved) {
 			*this = backup_snake;
-			currDir = backup_path.top();
+			path = backup_path;
 			moveTo();
 			return;
 		}
@@ -295,8 +300,25 @@ unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 			}
 			Index newIdx = idx+dir;
 			bool safeCross = true;
-			if(isBody[newIdx] && newIdx != getTailIdx())
+			if(isBody[newIdx]) {
 				safeCross = false;
+				if(length != 2) {
+					int cnt=0;
+					int len = lenMap[idx] + 1;
+					for(auto index : snake) {
+						if(cnt++ < len) {
+							if(index == newIdx) {
+								safeCross = true;
+								break;
+							}
+							else
+								continue;
+						}
+						else
+							break;
+					}
+				}
+			}
 
 			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross) {
 				q.push(idx+dir);
@@ -320,14 +342,16 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 	if(start-getHeadIdx() == -currDir)
 		return 0;
 
-	if(isDeadMove(start-getHeadIdx()))
-		return 0;
-
-	if(field->isFood(start))
+	if(start != getHeadIdx() && isDeadMove(start-getHeadIdx()))
 		return 0;
 
 	if(Path != nullptr && !Path->empty())
 		unix_error("Non-empeth path stack in DFS!");
+
+	Snake backupSnake = *this;
+	if(field->isFood(start)) {
+		this->grow(true);
+	}
 
 	unsigned size = field->fieldSize();
 
@@ -471,7 +495,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 			if(isBody[newIdx] && newIdx != getTailIdx())
 				safeCross = false;
 
-			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross && !field->isFood(idx+dir)) {
+			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross ) {
 				q.push(idx+dir);
 				lenMap[idx+dir] = lenMap[idx]+1;
 				explored[idx+dir] = true;
@@ -483,5 +507,6 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 
 	}
 
+	*this = backupSnake;
 	return 0;
 }
