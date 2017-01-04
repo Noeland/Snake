@@ -10,6 +10,7 @@
 
 #include "Utils.h"
 #include <vector>
+#include <list>
 
 const Direc UP = -WIDTH;
 const Direc DOWN = WIDTH;
@@ -21,6 +22,8 @@ const field_elem FOOD = '@';
 const field_elem WALL = 'X';
 const field_elem SNAKE_BODY = '*';
 const unsigned FIELD_SIZE = WIDTH * HEIGHT;
+
+extern std::list<Index> foodIdxRec;
 
 struct Snake;
 struct Field

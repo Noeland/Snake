@@ -56,6 +56,11 @@ int main() {
 		cout << "Congratulation!" << endl;
 	else
 		cout << "That's bad!" << endl;
+
+	cout << "Food idx: ";
+	for(auto idx : foodIdxRec) {
+		cout << idx << " ";
+	}
 	cout << endl;
 
 

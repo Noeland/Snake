@@ -12,6 +12,9 @@
 using std::cout;
 using std::endl;
 using std::vector;
+using std::list;
+
+list<Index> foodIdxRec = {22, 62, 53, 15,46, 50, 42, 64, 27, 33, 18 };
 
 Field::Field()
 {
@@ -136,6 +139,13 @@ void Field::growSnake(const Snake* snake)
 
 Index Field::foodGen()
 {
+	if(!foodIdxRec.empty()) {
+		hasBeenEaten = false;
+		Index idx = foodIdxRec.front();
+		foodIdxRec.pop_front();
+		return idx;
+	}
+
 	if(num_empty == 0) {
 		hasWin = true;
 		return -1;
@@ -158,6 +168,7 @@ Index Field::foodGen()
 	} while(field[i] != EMPTY_SLOT);
 
 	hasBeenEaten = false;
+	foodIdxRec.push_back(i);
 	return i;
 }
 

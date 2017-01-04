@@ -162,12 +162,21 @@ void Snake::move()
 
 	// Virtual
 	Snake backup_snake = *this;
-	if(myBFS(getHeadIdx()+currDir, field->getFoodIdx(), nullptr)) {
-		path.push(currDir);
+	Index food = field->getFoodIdx();
+	Index head = getHeadIdx();
+	stack<Direc> Path;
+	if( myBFS(head + currDir , food, &Path)) {
+		if(!isDeadMove(currDir + currDir))
+			path.push(currDir);
+		else {
+			path = Path;
+			path.push(currDir);
+		}
 	}
 	else {
-		myBFS(getHeadIdx(), field->getFoodIdx(), &path);
+		myBFS(head, food, &path);
 	}
+
 //	myBFS(getHeadIdx(), field->getFoodIdx(), &path);
 
 	if(!path.empty()) {
@@ -216,7 +225,7 @@ void Snake::chaseTail()
 	}
 
 	if(len[max_idx] != 0) {
-		path = Paths[max_idx];
+//		path = Paths[max_idx];
 		path.push(directions[max_idx]);
 	}
 	else {
