@@ -166,7 +166,7 @@ void Snake::move()
 	Index head = getHeadIdx();
 	stack<Direc> Path;
 
-	if(1) {
+	if(length < (WIDTH-2)*(HEIGHT-2) /2) {
 		if( myBFS(head + currDir , food, &Path)) {
 			if(!isDeadMove(currDir + currDir))
 				path.push(currDir);
@@ -179,9 +179,9 @@ void Snake::move()
 			myBFS(head, food, &path);
 		}
 	}
-//	else {
-//		DFS(head, food, &path);
-//	}
+	else {
+		DFS(head, food, &path);
+	}
 
 //	myBFS(getHeadIdx(), field->getFoodIdx(), &path);
 
@@ -376,7 +376,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 	memset(lenMap, 0, size * sizeof(unsigned));
 	memset(dirMap, 0 , size * sizeof(Direc));
 	memset(isBody, 0, size*sizeof(bool));
-	lenMap[start] = 1;
+	lenMap[start] = 0;
 	explored[start] = true;
 
 	for(auto i : snake)
@@ -390,6 +390,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 		idx = q.top();
 		q.pop();
 		explored[idx] = true;
+		lenMap[idx] = lenMap[idx + dirMap[idx]] + 1;
 
 		if(idx == end) {
 
@@ -514,7 +515,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 
 			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross ) {
 				q.push(idx+dir);
-				lenMap[idx+dir] = lenMap[idx]+1;
+//				lenMap[idx+dir] = lenMap[idx]+1;
 				dirMap[idx+dir] = -dir;
 				if(debugFlag == true)
 					printMap(lenMap);
