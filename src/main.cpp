@@ -10,8 +10,22 @@
 #include "Field.h"
 #include "Snake.h"
 #include <unistd.h>
-
+#include <csignal>
 using namespace std;
+
+void sig_handler(int sig)
+{
+	if(sig == SIGINT) {
+		cout << endl;
+		cout << "Food idx: ";
+
+		for(auto idx : foodIdxRec) {
+			cout << idx << ",";
+		}
+	}
+	cout << endl;
+	exit(1);
+}
 
 #include <unistd.h>
 #include <term.h>
@@ -30,6 +44,7 @@ void ClearScreen()
 
 int main() {
 
+	signal(SIGINT, sig_handler);
 	cout << "Please enter frequency (How many steps in one second): ";
 	int freq;
 	cin >> freq;

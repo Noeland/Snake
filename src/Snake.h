@@ -34,6 +34,7 @@ private:
 	inline void insertHead(Index newhead);
 	unsigned myBFS(Index start, Index end, std::stack<Direc> *Path);
 	unsigned DFS(Index start, Index end, std::stack<Direc> *Path);
+	unsigned recDFS(Index curr, Direc dir, Index start, Index end, std::stack<Direc> *Path, int lenMap[], int dirMap, bool explored);
 	void chaseTail();
 
 

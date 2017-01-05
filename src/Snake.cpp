@@ -165,17 +165,23 @@ void Snake::move()
 	Index food = field->getFoodIdx();
 	Index head = getHeadIdx();
 	stack<Direc> Path;
-	if( myBFS(head + currDir , food, &Path)) {
-		if(!isDeadMove(currDir + currDir))
-			path.push(currDir);
+
+	if(1) {
+		if( myBFS(head + currDir , food, &Path)) {
+			if(!isDeadMove(currDir + currDir))
+				path.push(currDir);
+			else {
+				path = Path;
+				path.push(currDir);
+			}
+		}
 		else {
-			path = Path;
-			path.push(currDir);
+			myBFS(head, food, &path);
 		}
 	}
-	else {
-		myBFS(head, food, &path);
-	}
+//	else {
+//		DFS(head, food, &path);
+//	}
 
 //	myBFS(getHeadIdx(), field->getFoodIdx(), &path);
 
@@ -215,7 +221,7 @@ void Snake::chaseTail()
 	stack<Direc> Paths[4];
 	unsigned len[5];
 	for(int i = 0; i != 4; i++)
-		len[i] = DFS(getHeadIdx()+directions[i], getTailIdx(), nullptr);
+		len[i] = DFS(getHeadIdx()+directions[i], getTailIdx(), &Paths[i]);
 
 	unsigned max_idx = 4;
 	len[max_idx] = 0;
@@ -225,7 +231,7 @@ void Snake::chaseTail()
 	}
 
 	if(len[max_idx] != 0) {
-//		path = Paths[max_idx];
+		path = Paths[max_idx];
 		path.push(directions[max_idx]);
 	}
 	else {
@@ -312,7 +318,7 @@ unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 				safeCross = false;
 				if(length != 2) {
 					int cnt=0;
-					int len = lenMap[idx]+1;
+					int len = 1;
 					for(auto index : snake) {
 						if(cnt++ < len) {
 							if(index == newIdx) {
@@ -438,7 +444,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 			}
 		}
 
-		Direc bestdir = start ? currDir : -dirMap[idx];
+		Direc bestdir = idx == start ? currDir : -dirMap[idx];
 		Direc directions[4] = {UP, DOWN, LEFT, RIGHT};
 		Direc dir1, dir2, dir3, dir4;
 		if(manhdist[max_idx] != manhdist[secmax]) {
@@ -519,4 +525,13 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 
 	*this = backupSnake;
 	return 0;
+}
+
+unsigned Snake::recDFS(Index curr, Direc dir, Index start, Index end, std::stack<Direc> *Path,
+				int lenMap[], int dirMap, bool explored)
+{
+	Snake backupSnake = *this;
+	currDir = dir;
+	moveTo(true);
+
 }

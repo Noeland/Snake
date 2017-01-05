@@ -14,7 +14,13 @@ using std::endl;
 using std::vector;
 using std::list;
 
-list<Index> foodIdxRec = {22, 62, 53, 15,46, 50, 42, 64, 27, 33, 18 };
+list<Index> foodIdxHist = { 26, 66, 41, 38, 29, 46, 14, 13, 30, 40,
+		  26, 53, 68, 50, 17, 38, 49, 32, 20, 50,
+		  46, 39, 52, 31, 63, 13, 26, 44, 33, 21,
+		  27, 29, 45, 44, 68, 55, 54, 65, 57, 22,
+		  46, 57, 68, 52 };
+
+list<Index> foodIdxRec;
 
 Field::Field()
 {
@@ -139,12 +145,19 @@ void Field::growSnake(const Snake* snake)
 
 Index Field::foodGen()
 {
-	if(!foodIdxRec.empty()) {
-		hasBeenEaten = false;
-		Index idx = foodIdxRec.front();
-		foodIdxRec.pop_front();
-		return idx;
-	}
+	std::default_random_engine generator;
+	std::random_device rd;
+	std::uniform_int_distribution<int> distribution(0, FIELD_SIZE-1);
+
+//	if(!foodIdxHist.empty()) {
+//		hasBeenEaten = false;
+//		Index idx = foodIdxHist.front();
+//		foodIdxHist.pop_front();
+//		while(field[idx] != EMPTY_SLOT) {
+//			idx = distribution(rd);
+//		}
+//		return idx;
+//	}
 
 	if(num_empty == 0) {
 		hasWin = true;
@@ -157,10 +170,6 @@ Index Field::foodGen()
 		else
 			unix_error("Food position inconsistent");
 	}
-
-	std::default_random_engine generator;
-	std::random_device rd;
-	std::uniform_int_distribution<int> distribution(0, FIELD_SIZE-1);
 
 	Index i;
 	do {
