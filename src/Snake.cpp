@@ -429,7 +429,7 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 			}
 		}
 
-		Direc bestdir = start ? currDir : -dirMap[idx];
+		Direc bestdir = idx==start ? currDir : -dirMap[idx];
 		Direc directions[4] = {UP, DOWN, LEFT, RIGHT};
 		Direc dir1, dir2, dir3, dir4;
 		if(manhdist[max_idx] != manhdist[secmax]) {
