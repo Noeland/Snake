@@ -20,7 +20,7 @@ void sig_handler(int sig)
 		cout << "Food idx: ";
 
 		for(auto idx : foodIdxRec) {
-			cout << idx << ",";
+			cout << idx << " ";
 		}
 	}
 	cout << endl;

@@ -166,7 +166,7 @@ void Snake::move()
 	Index head = getHeadIdx();
 	stack<Direc> Path;
 
-	if(length < (WIDTH-2)*(HEIGHT-2) /2) {
+	if(length > (WIDTH-2)*(HEIGHT-2)/2) {
 		if( myBFS(head + currDir , food, &Path)) {
 			if(!isDeadMove(currDir + currDir))
 				path.push(currDir);
@@ -176,11 +176,13 @@ void Snake::move()
 			}
 		}
 		else {
-			myBFS(head, food, &path);
+			int a = 0;
 		}
 	}
 	else {
-		DFS(head, food, &path);
+		myBFS(head, food, &Path);
+		if(!Path.empty())
+			path.push(Path.top());
 	}
 
 //	myBFS(getHeadIdx(), field->getFoodIdx(), &path);
@@ -220,40 +222,78 @@ void Snake::chaseTail()
 	Direc directions[4] = {UP, DOWN, LEFT, RIGHT};
 	stack<Direc> Paths[4];
 	unsigned len[5];
-	for(int i = 0; i != 4; i++)
-		len[i] = DFS(getHeadIdx()+directions[i], getTailIdx(), &Paths[i]);
+	Index head = getHeadIdx(), tail = getTailIdx();
+	Direc side = (currDir == UP || currDir == DOWN) ? RIGHT : UP;
 
-	unsigned max_idx = 4;
-	len[max_idx] = 0;
-	for(int i=0; i!=4; i++) {
-		if(len[i] > len[max_idx])
-			max_idx = i;
-	}
+	if(DFS(head+currDir, tail, &Paths[0])) {
+		if(!isDeadMove(currDir + currDir)) {
+			path.push(currDir);
+		}
+		else {
+//			path = Paths[0];
+			Snake backupSnake=*this;
+//			moveTo(true);
+//			if(DFS(getHeadIdx() + side, getTailIdx(), nullptr)) {
+//				*this = backupSnake;
+//				path.push(side);
+//			}
+//			else if(DFS(getHeadIdx() - side, getTailIdx(), nullptr)) {
+//				*this = backupSnake;
+//				path.push(-side);
+//			}
 
-	if(len[max_idx] != 0) {
-		path = Paths[max_idx];
-		path.push(directions[max_idx]);
+			Direc curr = currDir;
+			if(field->isEmpty(head+currDir+side) && field->isEmpty(head+side)) {
+				moveTo(true);
+				currDir = side;
+				moveTo(true);
+				currDir = -curr;
+				moveTo(true);
+				if( DFS(getHeadIdx(), getTailIdx(), nullptr) ) {
+					*this = backupSnake;
+					path.push(-curr);
+					path.push(side);
+				}
+				else
+					*this = backupSnake;
+			}
+			else if(field->isEmpty(head+currDir-side) && field->isEmpty(head-side)) {
+				moveTo(true);
+				currDir = -side;
+				moveTo(true);
+				currDir = -curr;
+				moveTo(true);
+				if( DFS(getHeadIdx(), getTailIdx(), nullptr) ) {
+					*this = backupSnake;
+					path.push(-curr);
+					path.push(-side);
+				}
+				else
+					*this = backupSnake;
+			}
+
+			path.push(currDir);
+		}
 	}
 	else {
+		DFS(head, tail, &Paths[0]);
+		if(!Paths[0].empty())
+			path.push(Paths[0].top());
+	}
 
-		field->turnOffFood();
-		for(int i = 0; i != 4; i++)
-			len[i] = DFS(getHeadIdx()+directions[i], field->getFoodIdx(), nullptr);
-		field->turnOnFood();
-
-		max_idx=4;
-		len[max_idx] = 0;
-		for(int i=0; i!=4; i++) {
-			if(len[i] > len[max_idx])
-				max_idx = i;
+	if(path.empty()) {
+		if(DFS(head+currDir, field->getFoodIdx(), &Paths[3])) {
+			if(!isDeadMove(currDir + currDir)) {
+				path.push(currDir);
+			}
+			else {
+				path = Paths[3];
+				path.push(currDir);
+			}
 		}
-
-		if(len[max_idx] !=0) {
-			path = Paths[max_idx];
-			path.push(directions[max_idx]);
+		else {
+			DFS(head, field->getFoodIdx(), &path);
 		}
-		else
-			path.push(currDir);
 	}
 
 	moveTo();
@@ -266,6 +306,10 @@ unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 		return 0;
 	if(Path != nullptr && !Path->empty())
 		unix_error("Get non-empty path stack!");
+
+	if(start == end && start != getHeadIdx()){
+		return 1;
+	}
 
 	unsigned size = field->fieldSize();
 
@@ -351,23 +395,17 @@ unsigned Snake::myBFS(Index start, Index end, std::stack<Direc> *Path)
 
 unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 {
+	if(start == getTailIdx()) {
+		return 1;
+	}
+
+	if(field->isWall(start))
+		return 0;
 
 	if(start-getHeadIdx() == -currDir)
 		return 0;
 
-	if(start != getHeadIdx() && isDeadMove(start-getHeadIdx()))
-		return 0;
-
-	if(Path != nullptr && !Path->empty())
-		unix_error("Non-empeth path stack in DFS!");
-
-	Snake backupSnake = *this;
-	if(field->isFood(start)) {
-		this->grow(true);
-	}
-
 	unsigned size = field->fieldSize();
-
 	bool explored[size];
 	int lenMap[size];
 	Direc dirMap[size];
@@ -378,9 +416,20 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 	memset(isBody, 0, size*sizeof(bool));
 	lenMap[start] = 0;
 	explored[start] = true;
-
 	for(auto i : snake)
 		isBody[i] = true;
+
+	if(start!=getHeadIdx() && isBody[start])
+		return 0;
+
+	if(Path != nullptr && !Path->empty())
+		unix_error("Non-empeth path stack in DFS!");
+
+	Snake backupSnake = *this;
+	if(field->isFood(start)) {
+		this->grow(true);
+	}
+
 
 	stack<Index> q;
 	q.push(start);
@@ -510,8 +559,25 @@ unsigned Snake::DFS(Index start, Index end, std::stack<Direc> *Path)
 
 			Index newIdx = idx+dir;
 			bool safeCross = true;
-			if(isBody[newIdx] && newIdx != getTailIdx())
+			if(isBody[newIdx]) {
 				safeCross = false;
+				if(length != 2) {
+					int cnt=0;
+					int len = 1;
+					for(auto index : snake) {
+						if(cnt++ < len) {
+							if(index == newIdx) {
+								safeCross = true;
+								break;
+							}
+							else
+								continue;
+						}
+						else
+							break;
+					}
+				}
+			}
 
 			if( !explored[idx+dir] && !field->isWall(idx+dir) && safeCross ) {
 				q.push(idx+dir);

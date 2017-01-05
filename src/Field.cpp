@@ -14,13 +14,16 @@ using std::endl;
 using std::vector;
 using std::list;
 
-list<Index> foodIdxHist = { 26, 66, 41, 38, 29, 46, 14, 13, 30, 40,
-		  26, 53, 68, 50, 17, 38, 49, 32, 20, 50,
-		  46, 39, 52, 31, 63, 13, 26, 44, 33, 21,
-		  27, 29, 45, 44, 68, 55, 54, 65, 57, 22,
-		  46, 57, 68, 52 };
-
-list<Index> foodIdxRec;
+list<Index> foodIdxHist = { 28, 110, 46, 61, 81, 130, 121, 68, 99, 29,
+		  55, 41, 19, 125, 102, 54, 113, 117, 32, 114,
+		  28, 33, 81, 52, 129, 58, 13, 100, 122, 15,
+		  90, 101, 57, 34, 85, 25, 117, 39, 52, 46,
+		  29, 45, 100, 103, 80, 53, 40, 89, 101, 16,
+		  89, 65, 43, 77, 55, 125, 63, 68, 115, 85,
+		  64, 86, 43, 38, 86, 76, 16, 27, 85, 74,
+		  73, 26, 18, 66, 33, 41, 44, 76, 100, 39,
+		  98, 121 };
+		list<Index> foodIdxRec;
 
 Field::Field()
 {
@@ -149,15 +152,16 @@ Index Field::foodGen()
 	std::random_device rd;
 	std::uniform_int_distribution<int> distribution(0, FIELD_SIZE-1);
 
-//	if(!foodIdxHist.empty()) {
-//		hasBeenEaten = false;
-//		Index idx = foodIdxHist.front();
-//		foodIdxHist.pop_front();
-//		while(field[idx] != EMPTY_SLOT) {
-//			idx = distribution(rd);
-//		}
-//		return idx;
-//	}
+	if(!foodIdxHist.empty()) {
+		hasBeenEaten = false;
+		Index idx = foodIdxHist.front();
+		foodIdxHist.pop_front();
+		while(field[idx] != EMPTY_SLOT) {
+			idx = distribution(rd);
+		}
+		foodIdxRec.push_back(idx);
+		return idx;
+	}
 
 	if(num_empty == 0) {
 		hasWin = true;
@@ -202,10 +206,11 @@ void Field::display(const Snake& s) const
 			}
 		}
 		else if(idx == s.getTailIdx()) {
-			cout << 'o';
+			cout << 'o' ;
 		}
 		else
 			cout << field[idx];
+		cout << ' ';
 	}
 	cout << endl;
 }
